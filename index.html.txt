@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>3D 粒子宇宙音乐可视化</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; }
+        #ui { position: absolute; top: 20px; left: 20px; color: white; font-family: sans-serif; pointer-events: none; }
+        button { pointer-events: auto; cursor: pointer; background: rgba(255,255,255,0.2); color: white; border: 1px solid white; padding: 10px; }
+    </style>
+</head>
+<body>
+    <div id="ui">
+        <h1>粒子宇宙</h1>
+        <button id="playBtn">播放音乐并开启星系</button>
+        <p>当前形状: <span id="shapeName">混沌星云</span></p>
+    </div>
+
+    <script type="importmap">
+        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+
+        // --- 全局变量 ---
+        let scene, camera, renderer, particles, analyser, dataArray;
+        const PARTICLE_COUNT = 50000;
+        let positions = new Float32Array(PARTICLE_COUNT * 3);
+        let geometry = new THREE.BufferGeometry();
+
+        // --- 初始化场景 ---
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 50;
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // 创建粒子材质
+            const material = new THREE.PointsMaterial({
+                size: 0.2,
+                color: 0x00ffff,
+                transparent: true,
+                blending: THREE.AdditiveBlending, // 这种混合模式会让发光效果更好
+                depthWrite: false
+            });
+
+            // 初始随机分布（星群）
+            for (let i = 0; i < PARTICLE_COUNT * 3; i++) {
+                positions[i] = (Math.random() - 0.5) * 100;
+            }
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+
+            animate();
+        }
+
+        // --- 音频处理 ---
+        async function setupAudio() {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const listener = new THREE.AudioListener();
+            camera.add(listener);
+
+            const sound = new THREE.Audio(listener);
+            const audioLoader = new THREE.AudioLoader();
+            
+            // 这里替换为你自己的 MP3 链接
+            audioLoader.load('https://path-to-your-music.mp3', (buffer) => {
+                sound.setBuffer(buffer);
+                sound.setLoop(true);
+                sound.play();
+            });
+
+            analyser = new THREE.AudioAnalyser(sound, 128);
+            dataArray = analyser.analyser.frequencyBinCount;
+        }
+
+        // --- 核心动画循环 ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (analyser) {
+                const data = analyser.getFrequencyData();
+                const avgFreq = analyser.getAverageFrequency();
+                
+                // 让整个粒子系统随节奏旋转和缩放
+                particles.rotation.y += 0.002;
+                particles.rotation.z += 0.001;
+                
+                const scale = 1 + avgFreq / 128;
+                particles.scale.set(scale, scale, scale);
+
+                // 更新粒子位置（这里可以根据频率实时微调粒子坐标）
+                const positions = particles.geometry.attributes.position.array;
+                for (let i = 0; i < PARTICLE_COUNT; i++) {
+                    const i3 = i * 3;
+                    // 加入一点颤动感
+                    positions[i3 + 1] += Math.sin(Date.now() * 0.001 + i) * (avgFreq / 500);
+                }
+                particles.geometry.attributes.position.needsUpdate = true;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // 事件监听
+        document.getElementById('playBtn').addEventListener('click', () => {
+            setupAudio();
+            document.getElementById('playBtn').style.display = 'none';
+        });
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        init();
+    </script>
+</body>
+</html>
