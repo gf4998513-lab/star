@@ -2,124 +2,338 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>3D 粒子宇宙音乐可视化</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AXIn · 乐理数 | 3D 粒子视觉</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; overflow: hidden; background: #000; }
-        #ui { position: absolute; top: 20px; left: 20px; color: white; font-family: sans-serif; pointer-events: none; }
-        button { pointer-events: auto; cursor: pointer; background: rgba(255,255,255,0.2); color: white; border: 1px solid white; padding: 10px; }
+        body { margin: 0; background-color: #000; overflow: hidden; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        
+        /* 顶端标题 */
+        #header {
+            position: absolute;
+            top: 30px;
+            width: 100%;
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            letter-spacing: 4px;
+            z-index: 10;
+            pointer-events: none;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        /* UI面板 */
+        #controls {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 15px;
+            cursor: pointer;
+            margin-right: 10px;
+            transition: 0.3s;
+            border-radius: 4px;
+        }
+        .btn:hover { background: rgba(255,255,255,0.3); }
+
+        #file-input { display: none; }
+        
+        #fullscreen-btn { position: absolute; top: 30px; right: 30px; z-index: 100; }
+
+        canvas { display: block; }
     </style>
 </head>
 <body>
-    <div id="ui">
-        <h1>粒子宇宙</h1>
-        <button id="playBtn">播放音乐并开启星系</button>
-        <p>当前形状: <span id="shapeName">混沌星云</span></p>
+
+    <div id="header">AXIn · 乐理数</div>
+
+    <div id="controls">
+        <button class="btn" onclick="document.getElementById('file-input').click()">上传音乐</button>
+        <input type="file" id="file-input" accept="audio/*">
+        <button class="btn" id="play-btn">开启艺术之旅</button>
+        <select id="shape-select" class="btn" style="background: #222;">
+            <option value="pyramid">三棱锥 (初始)</option>
+            <option value="koch">科赫曲线</option>
+            <option value="butterfly">蝴蝶曲线</option>
+            <option value="archimedean">阿基米德螺旋</option>
+            <option value="catenary">悬链线</option>
+            <option value="lemniscate">伯努利双扭线</option>
+            <option value="rose">玫瑰曲线</option>
+        </select>
     </div>
 
+    <button class="btn" id="fullscreen-btn">全屏</button>
+
     <script type="importmap">
-        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
     </script>
 
     <script type="module">
         import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+        import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
-        // --- 全局变量 ---
-        let scene, camera, renderer, particles, analyser, dataArray;
-        const PARTICLE_COUNT = 50000;
-        let positions = new Float32Array(PARTICLE_COUNT * 3);
-        let geometry = new THREE.BufferGeometry();
+        // --- 核心配置 ---
+        let scene, camera, renderer, controls, composer, particles;
+        let audioContext, analyser, dataArray, source;
+        const PARTICLE_COUNT = 15000;
+        let currentPositions = new Float32Array(PARTICLE_COUNT * 3);
+        let targetPositions = new Float32Array(PARTICLE_COUNT * 3);
+        let colors = new Float32Array(PARTICLE_COUNT * 3);
+        
+        const params = {
+            particleSize: 0.15,
+            bloomStrength: 1.5,
+            bloomRadius: 0.4,
+            baseColor: '#00ffff',
+            morphSpeed: 0.05,
+            rotationSpeed: 0.5
+        };
 
-        // --- 初始化场景 ---
+        init();
+        createParticles();
+        setupGUI();
+        animate();
+
         function init() {
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 50;
+            camera.position.z = 30;
 
-            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer = new THREE.WebGLRenderer({ antialias: false }); // 后处理不需要自带抗锯齿
             renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
             document.body.appendChild(renderer.domElement);
 
-            // 创建粒子材质
+            // 轨道控制
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+
+            // 后处理：辉光效果
+            const renderScene = new RenderPass(scene, camera);
+            const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+            bloomPass.threshold = 0;
+            bloomPass.strength = params.bloomStrength;
+            bloomPass.radius = params.bloomRadius;
+
+            composer = new EffectComposer(renderer);
+            composer.addPass(renderScene);
+            composer.addPass(bloomPass);
+
+            window.addEventListener('resize', onWindowResize);
+            document.getElementById('fullscreen-btn').onclick = () => document.documentElement.requestFullscreen();
+        }
+
+        function createParticles() {
+            const geometry = new THREE.BufferGeometry();
+            
+            // 初始形状：三棱锥 (Pyramid)
+            const side = 15;
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                // 简单的三棱锥随机表面采样
+                let x, y, z;
+                const r = Math.random();
+                if(r < 0.25) { // 底面
+                    x = (Math.random() - 0.5) * side;
+                    z = (Math.random() - 0.5) * side;
+                    y = -side/2;
+                } else { // 侧面简化
+                    const h = Math.random() * side - side/2;
+                    const ratio = (side/2 - h) / side;
+                    x = (Math.random() - 0.5) * side * ratio;
+                    z = (Math.random() - 0.5) * side * ratio;
+                    y = h;
+                }
+                currentPositions[i*3] = x;
+                currentPositions[i*3+1] = y;
+                currentPositions[i*3+2] = z;
+                targetPositions.set(currentPositions);
+
+                // 初始颜色
+                colors[i*3] = 1; colors[i*3+1] = 1; colors[i*3+2] = 1;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(currentPositions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
             const material = new THREE.PointsMaterial({
-                size: 0.2,
-                color: 0x00ffff,
+                size: params.particleSize,
+                vertexColors: true,
                 transparent: true,
-                blending: THREE.AdditiveBlending, // 这种混合模式会让发光效果更好
+                blending: THREE.AdditiveBlending,
                 depthWrite: false
             });
 
-            // 初始随机分布（星群）
-            for (let i = 0; i < PARTICLE_COUNT * 3; i++) {
-                positions[i] = (Math.random() - 0.5) * 100;
-            }
-            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
             particles = new THREE.Points(geometry, material);
             scene.add(particles);
+        }
 
-            animate();
+        // --- 数学几何生成器 ---
+        function updateShape(type) {
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                const t = (i / PARTICLE_COUNT) * Math.PI * 20; // 迭代参数
+                const i3 = i * 3;
+                let x = 0, y = 0, z = 0;
+
+                switch(type) {
+                    case 'koch': // 3D科赫模拟
+                        const r_k = 10 + Math.sin(t * 3) * 2;
+                        x = r_k * Math.cos(t);
+                        y = r_k * Math.sin(t);
+                        z = Math.sin(t * 5) * 5;
+                        break;
+                    case 'butterfly':
+                        const exp = (Math.exp(Math.cos(t)) - 2*Math.cos(4*t) - Math.pow(Math.sin(t/12), 5));
+                        x = Math.sin(t) * exp * 5;
+                        y = Math.cos(t) * exp * 5;
+                        z = Math.sin(t * 0.5) * 2;
+                        break;
+                    case 'rose':
+                        const k = 5/3;
+                        const r_r = 15 * Math.cos(k * t);
+                        x = r_r * Math.cos(t);
+                        y = r_r * Math.sin(t);
+                        z = Math.cos(t * 2) * 3;
+                        break;
+                    case 'archimedean':
+                        const a = 0.5;
+                        x = a * t * Math.cos(t);
+                        y = a * t * Math.sin(t);
+                        z = t * 0.2;
+                        break;
+                    case 'lemniscate':
+                        const al = 15;
+                        const den = 1 + Math.sin(t)**2;
+                        x = (al * Math.cos(t)) / den;
+                        y = (al * Math.sin(t) * Math.cos(t)) / den;
+                        z = Math.sin(t*2) * 2;
+                        break;
+                    case 'catenary':
+                        const ac = 5;
+                        x = (i / PARTICLE_COUNT - 0.5) * 40;
+                        y = ac * Math.cosh(x / ac) - 15;
+                        z = Math.sin(x) * 5;
+                        break;
+                    default: // Pyramid 复位
+                        x = currentPositions[i3]; y = currentPositions[i3+1]; z = currentPositions[i3+2];
+                }
+                targetPositions[i3] = x;
+                targetPositions[i3+1] = y;
+                targetPositions[i3+2] = z;
+            }
         }
 
         // --- 音频处理 ---
-        async function setupAudio() {
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const listener = new THREE.AudioListener();
-            camera.add(listener);
+        document.getElementById('play-btn').onclick = () => {
+            if(!audioContext) initAudio();
+            document.getElementById('play-btn').innerText = "演奏中...";
+        };
 
-            const sound = new THREE.Audio(listener);
-            const audioLoader = new THREE.AudioLoader();
+        document.getElementById('file-input').onchange = function(e) {
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                if(!audioContext) initAudio();
+                audioContext.decodeAudioData(ev.target.result, (buffer) => {
+                    if(source) source.stop();
+                    source = audioContext.createBufferSource();
+                    source.buffer = buffer;
+                    source.connect(analyser);
+                    source.start(0);
+                });
+            };
+            reader.readAsArrayBuffer(this.files[0]);
+        };
+
+        function initAudio() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 256;
+            dataArray = new Uint8Array(analyser.frequencyBinCount);
+            analyser.connect(audioContext.destination);
+        }
+
+        // --- GUI 配置 ---
+        function setupGUI() {
+            const gui = new GUI({ title: '参数微调' });
+            gui.add(params, 'particleSize', 0.01, 0.5).name('粒子大小').onChange(v => particles.material.size = v);
+            gui.add(params, 'morphSpeed', 0.01, 0.2).name('变形速度');
+            gui.add(params, 'rotationSpeed', 0, 2).name('自转速度');
+            gui.addColor(params, 'baseColor').name('主色调');
+            gui.add(params, 'bloomStrength', 0, 3).name('辉光亮度').onChange(v => composer.passes[1].strength = v);
             
-            // 这里替换为你自己的 MP3 链接
-            audioLoader.load('https://path-to-your-music.mp3', (buffer) => {
-                sound.setBuffer(buffer);
-                sound.setLoop(true);
-                sound.play();
-            });
-
-            analyser = new THREE.AudioAnalyser(sound, 128);
-            dataArray = analyser.analyser.frequencyBinCount;
+            document.getElementById('shape-select').onchange = (e) => updateShape(e.target.value);
         }
 
-        // --- 核心动画循环 ---
-        function animate() {
-            requestAnimationFrame(animate);
-
-            if (analyser) {
-                const data = analyser.getFrequencyData();
-                const avgFreq = analyser.getAverageFrequency();
-                
-                // 让整个粒子系统随节奏旋转和缩放
-                particles.rotation.y += 0.002;
-                particles.rotation.z += 0.001;
-                
-                const scale = 1 + avgFreq / 128;
-                particles.scale.set(scale, scale, scale);
-
-                // 更新粒子位置（这里可以根据频率实时微调粒子坐标）
-                const positions = particles.geometry.attributes.position.array;
-                for (let i = 0; i < PARTICLE_COUNT; i++) {
-                    const i3 = i * 3;
-                    // 加入一点颤动感
-                    positions[i3 + 1] += Math.sin(Date.now() * 0.001 + i) * (avgFreq / 500);
-                }
-                particles.geometry.attributes.position.needsUpdate = true;
-            }
-
-            renderer.render(scene, camera);
-        }
-
-        // 事件监听
-        document.getElementById('playBtn').addEventListener('click', () => {
-            setupAudio();
-            document.getElementById('playBtn').style.display = 'none';
-        });
-
-        window.addEventListener('resize', () => {
+        function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+            composer.setSize(window.innerWidth, window.innerHeight);
+        }
 
-        init();
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            let audioAvg = 0;
+            if (analyser) {
+                analyser.getByteFrequencyData(dataArray);
+                audioAvg = dataArray.reduce((a, b) => a + b) / dataArray.length;
+                
+                // 节奏驱动：根据低频能量改变流动速度和颜色
+                const boost = audioAvg / 128;
+                particles.rotation.y += params.rotationSpeed * 0.01 * (1 + boost);
+            }
+
+            // 平滑变形逻辑 (Morphing)
+            const posAttr = particles.geometry.attributes.position;
+            const colorAttr = particles.geometry.attributes.color;
+            const time = Date.now() * 0.001;
+
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                const i3 = i * 3;
+                
+                // 位置插值
+                posAttr.array[i3] += (targetPositions[i3] - posAttr.array[i3]) * params.morphSpeed;
+                posAttr.array[i3+1] += (targetPositions[i3+1] - posAttr.array[i3+1]) * params.morphSpeed;
+                posAttr.array[i3+2] += (targetPositions[i3+2] - posAttr.array[i3+2]) * params.morphSpeed;
+
+                // 加上音频引起的震荡
+                if(audioAvg > 0) {
+                    posAttr.array[i3] += Math.sin(time + i) * (audioAvg / 200);
+                }
+
+                // 动态颜色：基于位置和音乐
+                const colorBase = new THREE.Color(params.baseColor);
+                colorAttr.array[i3] = colorBase.r + Math.sin(time + i*0.1) * 0.2;
+                colorAttr.array[i3+1] = colorBase.g + Math.cos(time + i*0.1) * 0.2;
+                colorAttr.array[i3+2] = colorBase.b + (audioAvg / 255);
+            }
+            
+            posAttr.needsUpdate = true;
+            colorAttr.needsUpdate = true;
+            
+            controls.update();
+            composer.render();
+        }
     </script>
 </body>
 </html>
