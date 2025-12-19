@@ -12,7 +12,7 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #050505; /* 绝对黑，稍微提一点点亮度防止波纹断层 */
+            background-color: #050505; /* 绝对黑虚空 */
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             user-select: none;
         }
@@ -33,7 +33,7 @@
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            text-shadow: 0 5px 20px rgba(0,0,0,0.8); /* 增加投影增强实体感 */
+            text-shadow: 0 10px 30px rgba(0,0,0,0.8); /* 增加投影增强实体感 */
             transition: opacity 0.5s;
         }
 
@@ -44,39 +44,39 @@
             left: 30px;
             z-index: 20;
             color: #ccc;
-            background: rgba(20, 22, 25, 0.9); /* 更不透明的背景 */
-            backdrop-filter: blur(30px);
+            background: rgba(18, 18, 20, 0.95); /* 近乎不透明的实体背景 */
+            backdrop-filter: blur(40px);
             padding: 20px;
             border-radius: 4px;
-            border-left: 2px solid rgba(255, 255, 255, 0.3);
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
             width: 280px;
-            box-shadow: 0 30px 80px rgba(0,0,0,1.0);
+            box-shadow: 0 40px 100px rgba(0,0,0,1.0);
             transition: transform 0.3s;
         }
         
         .control-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
 
         button {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
             color: #ddd;
             padding: 8px 16px;
-            border-radius: 4px;
+            border-radius: 2px;
             cursor: pointer;
             font-size: 0.85rem;
             transition: all 0.3s;
-            font-weight: bold;
+            font-weight: 600;
             letter-spacing: 1px;
         }
-        button:hover { background: rgba(255,255,255,0.25); color: #fff; }
+        button:hover { background: rgba(255,255,255,0.2); color: #fff; }
 
         input[type="range"] {
             -webkit-appearance: none; width: 100%; height: 4px;
-            background: rgba(0,0,0,0.5); border-radius: 2px; outline: none; margin: 10px 0;
+            background: #333; border-radius: 2px; outline: none; margin: 10px 0;
         }
         input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none; width: 12px; height: 12px; border-radius: 0;
-            background: #fff; cursor: pointer; border: 1px solid #000;
+            -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+            background: #e0e0e0; cursor: pointer; border: 2px solid #000;
         }
         
         .song-info {
@@ -111,15 +111,15 @@
 <body>
 
     <div id="header-title">DAVID MUSIC</div>
-    <div id="loading">COMPUTING VOLUMETRICS...</div>
+    <div id="loading">GENERATING VOLUMETRIC DATA...</div>
 
     <div id="player-controls">
         <div class="song-info" id="current-song">System Idle</div>
-        <div class="artist-name">Solid State Engine</div>
+        <div class="artist-name">Volumetric Core</div>
         
         <div class="control-row">
-            <button id="btn-upload">LOAD</button>
-            <button id="btn-play">INIT</button>
+            <button id="btn-upload">LOAD DATA</button>
+            <button id="btn-play">INITIATE</button>
         </div>
         
         <div style="font-size: 0.7rem; color:#666; display:flex; justify-content:space-between;">
@@ -127,7 +127,7 @@
         </div>
         <input type="range" id="progress-bar" value="0" min="0" max="100" step="0.1">
         
-        <div style="font-size: 0.7rem; color:#666; margin-top:5px;">PRESSURE</div>
+        <div style="font-size: 0.7rem; color:#666; margin-top:5px;">DENSITY PRESSURE</div>
         <input type="range" id="vol-bar" value="0.7" min="0" max="1" step="0.01">
 
         <input type="file" id="file-input" accept="audio/*" multiple>
@@ -155,36 +155,36 @@
 
         // --- 全局配置 ---
         const config = {
-            particleCount: 35000, // 增加粒子数以获得高密度实体感
+            particleCount: 40000, // 极高密度以形成体积
             shape: 'cumulus',     // 默认模式：实体积雨云
             
             // 视觉调节
-            particleSize: 0.8,    // 大尺寸粒子以形成体积覆盖
-            particleOpacity: 0.15, // 低透明度 + 正常混合 = 烟雾体积感
+            particleSize: 0.9,    // 大尺寸粒子填充缝隙
+            particleOpacity: 0.8, // 高不透明度 = 实体感
             themeColor: '#ffffff',
             useDynamicColor: true, 
             
             // 运动调节
-            flowSpeed: 0.4,       // 下坠速度
+            flowSpeed: 0.3,       // 下坠速度
             rotationSpeed: 0.0001, 
             flowDirection: 1,
             
             // 音乐响应
-            bassSensitivity: 1.0, 
-            trebleSensitivity: 0.5, // 降低高音闪烁，保持实体感
+            bassSensitivity: 1.2, 
+            trebleSensitivity: 0.3, // 降低高音干扰，保持禅意
             
             // 后期特效
-            bloomStrength: 0.8,   // 降低辉光，避免看起来像全息图
-            bloomRadius: 0.4,
+            bloomStrength: 0.6,   // 弱光晕，强调漫反射
+            bloomRadius: 0.5,
             breathRate: 0.2       // 极慢呼吸
         };
 
         let scene, camera, renderer, composer, controls;
         let particles, particleGeo;
         let positions, targets, initialPositions;
-        // streamID: 粒子属于哪个瀑布流
-        // streamOffset: 粒子在瀑布流中的相对相位
-        let types, uvData, colorAttributes, lifeData, streamIDs, streamOffsets; 
+        // clumpID: 粒子属于哪个离散云簇
+        // clumpOffset: 粒子在云簇内的局部偏移
+        let types, uvData, colorAttributes, lifeData, clumpIDs, clumpOffsets; 
         
         let clock = new THREE.Clock();
         let audioContext, audioAnalyser, audioSource, audioBuffer;
@@ -193,15 +193,16 @@
         let audioDuration = 0;
         let gui;
 
-        // 瀑布流配置
-        const STREAM_COUNT = 8; // 8条永恒下落的云柱
-        const streamOrigins = [];
-        for(let i=0; i<STREAM_COUNT; i++) {
-            streamOrigins.push({
-                x: (Math.random()-0.5)*20, 
-                z: (Math.random()-0.5)*20,
-                phase: Math.random() * 10,
-                speedVar: 0.8 + Math.random() * 0.4
+        // 离散云簇配置 (Discrete Clumps)
+        const CLUMP_COUNT = 5; // 同时也存在的下落团块数量
+        const LOOP_HEIGHT = 90; // 循环总高度
+        const clumpOrigins = [];
+        for(let i=0; i<CLUMP_COUNT; i++) {
+            clumpOrigins.push({
+                x: (Math.random()-0.5)*15, 
+                z: (Math.random()-0.5)*15,
+                phase: (i / CLUMP_COUNT) * LOOP_HEIGHT, // 均匀分布相位，避免重叠
+                size: 3 + Math.random() * 2 // 团块大小差异
             });
         }
 
@@ -216,10 +217,10 @@
 
         function init() {
             scene = new THREE.Scene();
-            scene.fog = new THREE.FogExp2(0x050505, 0.002); // 黑色雾
+            scene.fog = new THREE.FogExp2(0x050505, 0.0015);
 
             camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 2000);
-            camera.position.set(0, -10, 80); // 稍微仰视，看云底
+            camera.position.set(0, -15, 90); // 仰视视角，感受压迫感
 
             renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance" });
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -231,7 +232,7 @@
             controls.enableDamping = true;
             controls.dampingFactor = 0.03;
             controls.autoRotate = true;
-            controls.autoRotateSpeed = 0.1;
+            controls.autoRotateSpeed = 0.05; // 几不可察的旋转
 
             const renderScene = new RenderPass(scene, camera);
             const bloomPass = new UnrealBloomPass(
@@ -267,8 +268,8 @@
             uvData = new Float32Array(config.particleCount * 2);
             colorAttributes = new Float32Array(config.particleCount * 3);
             lifeData = new Float32Array(config.particleCount); 
-            streamIDs = new Int8Array(config.particleCount);
-            streamOffsets = new Float32Array(config.particleCount);
+            clumpIDs = new Int8Array(config.particleCount);
+            clumpOffsets = new Float32Array(config.particleCount * 3);
 
             const c = new THREE.Color(config.themeColor);
 
@@ -282,12 +283,12 @@
             particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
             particleGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
-            // 关键：使用 NormalBlending 而不是 AdditiveBlending，创造实体遮挡感
+            // [核心] 使用 NormalBlending 配合高 Opacity 实现实体遮挡感
             const material = new THREE.PointsMaterial({
                 size: config.particleSize,
                 vertexColors: true,
                 blending: THREE.NormalBlending, 
-                depthWrite: false, // 仍然关掉深度写入以允许粒子堆叠
+                depthWrite: false, // 粒子系统常用设置，配合高密度模拟体积
                 transparent: true,
                 opacity: config.particleOpacity,
                 map: getSprite()
@@ -303,11 +304,10 @@
             const canvas = document.createElement('canvas');
             canvas.width = 64; canvas.height = 64;
             const ctx = canvas.getContext('2d');
-            // 更扎实的云纹理，中心不透明度高
+            // 高密度的云团笔刷：中心极实，边缘快速衰减
             const grad = ctx.createRadialGradient(32,32,0,32,32,32);
-            grad.addColorStop(0, 'rgba(255,255,255,0.8)'); // 核心较实
-            grad.addColorStop(0.3, 'rgba(220,220,230,0.3)');
-            grad.addColorStop(0.7, 'rgba(100,100,110,0.05)');
+            grad.addColorStop(0, 'rgba(255,255,255,0.95)'); // 核心几乎不透明
+            grad.addColorStop(0.5, 'rgba(230,230,240,0.5)');
             grad.addColorStop(1, 'rgba(0,0,0,0)');
             ctx.fillStyle = grad;
             ctx.fillRect(0,0,64,64);
@@ -321,46 +321,47 @@
             const count = config.particleCount;
             let idx = 0;
 
+            // UI Feedback
             if(type === 'cumulus') {
                 titleEl.style.backgroundImage = 'linear-gradient(180deg, #ffffff, #667788)';
                 if(config.useDynamicColor) updateGUIColor('#ffffff');
-                particles.material.blending = THREE.NormalBlending; // 实体感
-            } else if (type === 'nebula') {
-                titleEl.style.backgroundImage = 'linear-gradient(135deg, #fff, #ffcc00, #ff00ff)';
-                particles.material.blending = THREE.AdditiveBlending; // 发光感
-            } else if (type === 'origin') {
-                titleEl.style.backgroundImage = 'linear-gradient(180deg, #fff, #ffae00)';
+                particles.material.blending = THREE.NormalBlending; // 实体
+                particles.material.opacity = 0.8;
+            } else {
+                // 其他模式保持发光感
                 particles.material.blending = THREE.AdditiveBlending;
-            } else if (type === 'zen') {
-                titleEl.style.backgroundImage = 'linear-gradient(180deg, #fff, #999)';
-                particles.material.blending = THREE.NormalBlending;
+                particles.material.opacity = 0.6;
+                if (type === 'nebula') titleEl.style.backgroundImage = 'linear-gradient(135deg, #fff, #ffcc00, #ff00ff)';
+                else if (type === 'origin') titleEl.style.backgroundImage = 'linear-gradient(180deg, #fff, #ffae00)';
+                else if (type === 'zen') titleEl.style.backgroundImage = 'linear-gradient(180deg, #fff, #999)';
             }
 
             if (type === 'cumulus') { 
                 // ==========================================
-                // NEW: SOLID CUMULUS & PERPETUAL WATERFALL
+                // SOLID VOLUMETRIC CUMULUS (实体积雨云)
                 // ==========================================
                 
-                // Metaballs Cloud Body (40% of particles)
+                // 1. Cloud Anatomy: Metaballs (花椰菜结构)
+                // 定义多个球心，模拟积雨云顶部的翻腾感
                 const blobs = [
-                    {x:0, y:8, z:0, r:15},  // Main
-                    {x:12, y:9, z:4, r:10}, 
-                    {x:-12, y:8, z:4, r:10},
-                    {x:0, y:16, z:-5, r:9}, // Top Crest
-                    {x:6, y:12, z:-10, r:8},
-                    {x:-6, y:11, z:-8, r:9}
+                    {x:0, y:8, z:0, r:16},   // 主体
+                    {x:12, y:10, z:5, r:11}, 
+                    {x:-12, y:9, z:5, r:11},
+                    {x:6, y:14, z:-8, r:10}, // 顶部突起
+                    {x:-6, y:13, z:-6, r:10},
+                    {x:0, y:18, z:0, r:8}    // 尖顶
                 ];
 
-                const fallCount = Math.floor(count * 0.6); // 60% particles for the heavy waterfall
+                const fallCount = Math.floor(count * 0.35); // 35% 粒子用于下落团簇
                 const cloudCount = count - fallCount;
 
-                // --- 1. Cloud Body (The Anvil) ---
+                // --- 1. Cloud Body (Type 0) ---
                 for (let i = 0; i < cloudCount; i++) {
                     types[i] = 0; 
                     const blob = blobs[Math.floor(Math.random() * blobs.length)];
                     
-                    // High density distribution
-                    const r = blob.r * Math.pow(Math.random(), 0.3); // Push to edge for defined shape
+                    // 高密度填充：使用 Math.pow 调整分布，让边缘更锐利
+                    const r = blob.r * Math.pow(Math.random(), 0.4); 
                     const theta = Math.random() * Math.PI * 2;
                     const phi = Math.acos(2 * Math.random() - 1);
                     
@@ -368,65 +369,72 @@
                     let y = blob.y + r * Math.sin(phi) * Math.sin(theta);
                     let z = blob.z + r * Math.cos(phi);
 
-                    // Flat Base Clamping
+                    // Flat Base: 强制切平底部
                     if (y < 0) {
-                        y = 0; 
-                        // Spread out base slightly
-                        x *= 1.1; z *= 1.1;
+                        y = (Math.random() - 0.5) * 1.0; // 极薄的底部
+                        // 底部水平扩散
+                        x *= 1.15; z *= 1.15;
                     }
 
                     targets[idx] = x; targets[idx+1] = y; targets[idx+2] = z;
                     initialPositions[idx] = x; initialPositions[idx+1] = y; initialPositions[idx+2] = z;
 
-                    // Fake AO / Self-shadowing
-                    // Top = White, Bottom/Inside = Dark Grey
-                    const heightFactor = Math.max(0, y) / 25;
-                    const ao = 0.1 + heightFactor * 0.9;
+                    // Volumetric Self-Shadowing (体积自遮蔽)
+                    // 简单的模拟：顶部亮，底部暗，内部暗
+                    const heightFactor = Math.max(0, y) / 25; // 0~1
+                    const depthFactor = Math.min(1, Math.sqrt(x*x + z*z)/20); // 边缘亮，中心暗
                     
-                    colorAttributes[idx] = ao; 
-                    colorAttributes[idx+1] = ao * 1.02; // slight blue tint
-                    colorAttributes[idx+2] = ao * 1.05;
+                    // 基础光照
+                    let shade = 0.1 + heightFactor * 0.8;
+                    // 边缘光补偿
+                    shade += depthFactor * 0.15;
+                    // 底部强制压暗 (Opaque Base)
+                    if(y < 2) shade *= 0.4;
+
+                    colorAttributes[idx] = shade; // R
+                    colorAttributes[idx+1] = shade * 1.02; // G (微冷)
+                    colorAttributes[idx+2] = shade * 1.05; // B (冷灰)
 
                     idx += 3;
                 }
 
-                // --- 2. Perpetual Waterfall Streams ---
-                const perStream = Math.floor(fallCount / STREAM_COUNT);
+                // --- 2. Discrete Falling Clumps (Type 1) ---
+                // 离散对象：分配粒子到特定的团块 ID
+                const particlesPerClump = Math.floor(fallCount / CLUMP_COUNT);
                 
-                for (let s = 0; s < STREAM_COUNT; s++) {
-                    for (let k = 0; k < perStream; k++) {
-                        const i = cloudCount + s * perStream + k;
-                        types[i] = 1;
-                        streamIDs[i] = s;
-                        
-                        // Distribute particles along the vertical axis for the loop
-                        // "Conveyor Belt" setup
-                        const verticalPos = Math.random(); // 0 to 1
-                        streamOffsets[i] = verticalPos;
+                for (let c = 0; c < CLUMP_COUNT; c++) {
+                    for (let k = 0; k < particlesPerClump; k++) {
+                        const i = cloudCount + c * particlesPerClump + k;
+                        if (i >= count) break;
 
-                        // Create a "Clump" shape locally
-                        const r = 3 * Math.random();
+                        types[i] = 1;
+                        clumpIDs[i] = c;
+                        
+                        // 生成团块内部的局部坐标 (Local Space)
+                        // 初始是个球体
+                        const clumpSize = clumpOrigins[c].size;
+                        const r = clumpSize * Math.cbrt(Math.random());
                         const theta = Math.random() * Math.PI * 2;
                         const phi = Math.acos(2 * Math.random() - 1);
                         
                         const lx = r * Math.sin(phi) * Math.cos(theta);
-                        const ly = r * Math.sin(phi) * Math.sin(theta); // Will be overridden by stream logic
+                        const ly = r * Math.sin(phi) * Math.sin(theta);
                         const lz = r * Math.cos(phi);
 
-                        // Store local shape relative to stream center
-                        initialPositions[i*3] = lx;
-                        initialPositions[i*3+1] = ly; 
-                        initialPositions[i*3+2] = lz;
+                        // 存储局部坐标，用于后面做 Toroidal 变形
+                        clumpOffsets[i*3] = lx;
+                        clumpOffsets[i*3+1] = ly;
+                        clumpOffsets[i*3+2] = lz;
 
-                        // Darker color for falling dense matter
-                        colorAttributes[i*3] = 0.5;
-                        colorAttributes[i*3+1] = 0.55;
-                        colorAttributes[i*3+2] = 0.6;
+                        // 颜色：稍微暗一点，增加重量感
+                        colorAttributes[i*3] = 0.6;
+                        colorAttributes[i*3+1] = 0.62;
+                        colorAttributes[i*3+2] = 0.65;
                     }
                 }
 
             } else if (type === 'nebula') {
-                // ... (Nebula Logic from previous)
+                // ... (保留 Singularity 逻辑)
                 const maxDist=80; const speedBase=0.1;
                 for(let i=0; i<count; i++) {
                     const rand=Math.random(); let pType=2; if(rand<0.3) pType=0; else if(rand<0.65) pType=1; types[i]=pType;
@@ -483,94 +491,92 @@
 
             if (config.shape === 'cumulus') { 
                 // ==========================================
-                // PHYSICAL CUMULUS & PERPETUAL LOOP
+                // PERPETUAL LOOP PHYSICS & TOROIDAL CLUMPS
                 // ==========================================
                 
-                const LOOP_HEIGHT = 70; // 瀑布总高度
-                const START_Y = 0;      // 瀑布起始点 (云底)
-
+                // 1. Cloud Body Breathing
+                // 顶部呼吸，底部不动
                 for (let i = 0; i < config.particleCount; i++) {
                     const idx = i * 3;
                     const type = types[i];
                     
                     if (type === 0) { 
-                        // [Cloud Body]
                         const tx = targets[idx];
                         const ty = targets[idx+1];
                         const tz = targets[idx+2];
                         
-                        // Breathing: 整体轻微膨胀
-                        // Bass 增加膨胀
-                        const scale = breath + bassImpact * 0.03;
+                        const yRatio = Math.max(0, ty) / 10; // 越高呼吸越大
+                        const scale = breath + bassImpact * 0.02 * yRatio;
                         
-                        // 底部固定，顶部膨胀更多 (Anatomy)
-                        const yFactor = Math.max(0, ty) / 10;
-                        const finalX = tx * (1 + (scale-1)*yFactor);
-                        const finalY = ty * scale;
-                        const finalZ = tz * (1 + (scale-1)*yFactor);
-
-                        positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], finalX, 0.1);
-                        positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], finalY, 0.1);
-                        positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], finalZ, 0.1);
+                        positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], tx * (1+(scale-1)*yRatio), 0.1);
+                        positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], ty * scale, 0.1);
+                        positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], tz * (1+(scale-1)*yRatio), 0.1);
                         
-                        // Static Self-Shadowing Color
                         if(config.useDynamicColor) {
-                            colorsArray[idx] = colorAttributes[idx];
-                            colorsArray[idx+1] = colorAttributes[idx+1];
-                            colorsArray[idx+2] = colorAttributes[idx+2];
-                        } else {
-                            colorsArray[idx] = customColor.r; colorsArray[idx+1] = customColor.g; colorsArray[idx+2] = customColor.b;
-                        }
+                            colorsArray[idx] = colorAttributes[idx] + trebleImpact*0.1;
+                            colorsArray[idx+1] = colorAttributes[idx+1] + trebleImpact*0.1;
+                            colorsArray[idx+2] = colorAttributes[idx+2] + trebleImpact*0.1;
+                        } else { colorsArray[idx] = customColor.r; colorsArray[idx+1] = customColor.g; colorsArray[idx+2] = customColor.b; }
 
                     } else if (type === 1) {
-                        // [Perpetual Waterfall Streams]
-                        const sid = streamIDs[i];
-                        const origin = streamOrigins[sid];
-                        const offset = streamOffsets[i]; // 0.0 - 1.0 (phase inside stream)
+                        // [Discrete Clump Dynamics]
+                        const cid = clumpIDs[i];
+                        const origin = clumpOrigins[cid];
                         
-                        const lx = initialPositions[idx];
-                        // ly 忽略，因为Y是由循环控制
-                        const lz = initialPositions[idx+2];
+                        // Local sphere coordinates
+                        const lx = clumpOffsets[idx];
+                        const ly = clumpOffsets[idx+1];
+                        const lz = clumpOffsets[idx+2];
 
-                        // Calculate Loop Progress
-                        // progress = (time * speed + offset) % 1.0
-                        // 这样保证总是有粒子在不同的高度，形成连续流
-                        let speed = config.flowSpeed * origin.speedVar;
-                        let progress = (time * speed * 0.2 + offset) % 1.0; 
+                        // Perpetual Loop Math: Y(t) = (Start - v*t) % Height
+                        // 加上 Phase 使得每个团块位置错开
+                        const rawY = (20 - (time * config.flowSpeed * 15 + origin.phase)) % LOOP_HEIGHT;
                         
-                        // Convert progress (0-1) to Y position (0 to -LOOP_HEIGHT)
-                        // 使用 Power function 模拟重力加速: y ~ t^2
-                        // normalized fall (0-1) -> physics fall (0-1)
-                        let physicsProgress = Math.pow(progress, 1.5); // 1.5次方模拟加速度
-                        
-                        let currentY = START_Y - physicsProgress * LOOP_HEIGHT;
+                        // rawY 范围约 20 到 -70
+                        // 映射到世界坐标
+                        let currentY = 20 - ((20 - rawY + LOOP_HEIGHT) % LOOP_HEIGHT); 
 
-                        // Toroidal Morphing (环形演变)
-                        // 随着下落，向外扩张形成甜甜圈
-                        // 扩张量随 progress 增加
-                        let expansion = physicsProgress * 6.0; 
+                        // Toroidal Transformation Logic (环形演化)
+                        // 当 Y 接近 0 (云底) 时，保持球形
+                        // 当 Y 向下变小，向外扩张变成甜甜圈
                         
-                        // 计算水平向量
-                        const distH = Math.sqrt(lx*lx + lz*lz) + 0.001;
+                        let toroidalFactor = 0;
+                        if (currentY < -5) {
+                            toroidalFactor = Math.min((-currentY - 5) / 40, 1.0); // 0 to 1 as it falls
+                        }
+
+                        // 计算水平方向单位向量
+                        const distH = Math.sqrt(lx*lx + lz*lz) + 0.0001;
                         const dirX = lx / distH;
                         const dirZ = lz / distH;
                         
-                        // 基础半径 + 扩张
-                        let currentR = distH + expansion;
+                        // 环形扩张：半径变大，截面变扁
+                        const ringExpansion = toroidalFactor * 5.0; // 扩张半径
+                        const ringFlatten = 1.0 - toroidalFactor * 0.6; // 变扁
 
-                        let worldX = origin.x + dirX * currentR;
-                        let worldZ = origin.z + dirZ * currentR;
-                        
-                        // Bass Shake
-                        worldX += (Math.random()-0.5) * bassImpact * 0.2;
-                        
-                        // 顶部Fade in/底部Fade out，消除Loop跳变
+                        let finalLx = lx + dirX * ringExpansion;
+                        let finalLy = ly * ringFlatten;
+                        let finalLz = lz + dirZ * ringExpansion;
+
+                        // World Position
+                        let worldX = origin.x + finalLx;
+                        let worldY = currentY + finalLy;
+                        let worldZ = origin.z + finalLz;
+
+                        // 节奏控制: Slow In (Surface Tension)
+                        // 在云底 (Y=0附近) 停留时间稍长
+                        // 这里通过微调 currentY 实现视觉上的滞留感 (Math Trick)
+                        // 略过，因为 Modulo 线性运动已经很好了，加上环形变形就很有物理感
+
+                        // Fade In/Out at boundaries to hide the loop jump
+                        // 当出现在顶部(20)或消失在底部(-70)时透明度降低
                         let alpha = 1.0;
-                        if(progress < 0.1) alpha = progress * 10;
-                        if(progress > 0.9) alpha = (1 - progress) * 10;
+                        if (currentY > 10) alpha = (20 - currentY) / 10;
+                        if (currentY < -60) alpha = (currentY + 70) / 10;
+                        alpha = Math.max(0, Math.min(1, alpha));
 
                         positionsArray[idx] = worldX;
-                        positionsArray[idx+1] = currentY; 
+                        positionsArray[idx+1] = worldY;
                         positionsArray[idx+2] = worldZ;
                         
                         if(config.useDynamicColor) {
@@ -580,7 +586,6 @@
                         }
                     }
                 }
-                // 极慢旋转
                 particles.rotation.y = time * 0.01 * config.rotationSpeed;
 
             } else if (config.shape === 'nebula') {
