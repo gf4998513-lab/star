@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DAVID MUSIC - Singularity</title>
+    <title>DAVID MUSIC - Cyber Zen</title>
     <style>
         /* --- 全局样式 --- */
         body, html {
@@ -12,7 +12,7 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #000000; /* 绝对黑 */
+            background-color: #000000; /* 绝对黑虚空 */
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             user-select: none;
         }
@@ -33,7 +33,7 @@
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            text-shadow: 0 0 40px rgba(255,255,255,0.2);
+            text-shadow: 0 0 40px rgba(255,255,255,0.15);
             transition: opacity 0.5s;
         }
 
@@ -44,13 +44,13 @@
             left: 30px;
             z-index: 20;
             color: #ccc;
-            background: rgba(5, 5, 5, 0.75);
-            backdrop-filter: blur(20px);
+            background: rgba(8, 10, 8, 0.8); /* 微绿倾向的深色背景 */
+            backdrop-filter: blur(25px);
             padding: 20px;
             border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(0, 255, 0, 0.05); /* 极淡的绿色边框 */
             width: 280px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.9);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.95);
             transition: transform 0.3s;
         }
         
@@ -66,7 +66,7 @@
             font-size: 0.85rem;
             transition: all 0.3s;
         }
-        button:hover { background: rgba(255,255,255,0.15); border-color: #fff; color: #fff; }
+        button:hover { background: rgba(0,255,100,0.1); border-color: #0f0; color: #fff; }
 
         input[type="range"] {
             -webkit-appearance: none; width: 100%; height: 2px;
@@ -74,7 +74,7 @@
         }
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none; width: 10px; height: 10px; border-radius: 50%;
-            background: #fff; cursor: pointer; box-shadow: 0 0 10px rgba(255,255,255,0.5);
+            background: #fff; cursor: pointer; box-shadow: 0 0 10px rgba(0,255,0,0.5);
         }
         
         .song-info {
@@ -102,30 +102,30 @@
         
         #loading {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            color: #666; font-size: 0.8rem; letter-spacing: 4px; pointer-events: none; transition: opacity 0.5s;
+            color: #0f0; font-size: 0.8rem; letter-spacing: 4px; pointer-events: none; transition: opacity 0.5s;
         }
     </style>
 </head>
 <body>
 
     <div id="header-title">DAVID MUSIC</div>
-    <div id="loading">GENERATING SINGULARITY...</div>
+    <div id="loading">LOADING MATRIX...</div>
 
     <div id="player-controls">
-        <div class="song-info" id="current-song">Awaiting Input</div>
-        <div class="artist-name">System Online</div>
+        <div class="song-info" id="current-song">System Idle</div>
+        <div class="artist-name">Cyber Zen Interface</div>
         
         <div class="control-row">
-            <button id="btn-upload">Load Music</button>
-            <button id="btn-play">Play</button>
+            <button id="btn-upload">Import Data</button>
+            <button id="btn-play">Initialize</button>
         </div>
         
         <div style="font-size: 0.7rem; color:#666; display:flex; justify-content:space-between;">
-            <span>PROGRESS</span> <span id="time-display">0:00</span>
+            <span>SEQUENCE</span> <span id="time-display">0:00</span>
         </div>
         <input type="range" id="progress-bar" value="0" min="0" max="100" step="0.1">
         
-        <div style="font-size: 0.7rem; color:#666; margin-top:5px;">INTENSITY</div>
+        <div style="font-size: 0.7rem; color:#666; margin-top:5px;">SIGNAL GAIN</div>
         <input type="range" id="vol-bar" value="0.7" min="0" max="1" step="0.01">
 
         <input type="file" id="file-input" accept="audio/*" multiple>
@@ -154,33 +154,33 @@
         // --- 全局配置 ---
         const config = {
             particleCount: 25000,
-            shape: 'nebula', // 注意：这里虽然ID叫 nebula，但内部逻辑已改为 "Singularity"
+            shape: 'sphere', // 这里 'sphere' 实际上是新的 "Cyber Cloud"
             
             // 视觉调节
             particleSize: 0.25,
-            particleOpacity: 0.8,
-            themeColor: '#ffffff',
+            particleOpacity: 0.85,
+            themeColor: '#00ff00', // 默认矩阵绿
             useDynamicColor: true, 
             
             // 运动调节
-            flowSpeed: 0.3, // 爆炸速度
-            rotationSpeed: 0.0002, // 极慢的整体漂移
+            flowSpeed: 0.3, // 下坠/呼吸速度
+            rotationSpeed: 0.0002, 
             flowDirection: 1,
             
             // 音乐响应
-            bassSensitivity: 1.5, // 冲击波强度
-            trebleSensitivity: 2.0, // 核心闪烁强度
+            bassSensitivity: 1.2, 
+            trebleSensitivity: 2.0, // 高音控制矩阵闪烁
             
             // 后期特效
-            bloomStrength: 1.8,
-            bloomRadius: 0.6,
-            breathRate: 0.5
+            bloomStrength: 1.6,
+            bloomRadius: 0.7,
+            breathRate: 0.4
         };
 
         let scene, camera, renderer, composer, controls;
         let particles, particleGeo;
-        let positions, targets, initialPositions; // initialPositions 在Singularity模式下存储速度向量
-        let types, uvData, colorAttributes, lifeData; // lifeData 用于循环爆炸
+        let positions, targets, initialPositions;
+        let types, uvData, colorAttributes, lifeData; // lifeData 用于液滴下坠循环
         
         let clock = new THREE.Clock();
         let audioContext, audioAnalyser, audioSource, audioBuffer;
@@ -200,10 +200,10 @@
 
         function init() {
             scene = new THREE.Scene();
-            scene.fog = new THREE.FogExp2(0x000000, 0.002); // Deep Void
+            scene.fog = new THREE.FogExp2(0x000000, 0.002); // 绝对黑
 
             camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 2000);
-            camera.position.set(0, 5, 80);
+            camera.position.set(0, 0, 80); // 正视图
 
             renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance" });
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -215,7 +215,7 @@
             controls.enableDamping = true;
             controls.dampingFactor = 0.03;
             controls.autoRotate = true;
-            controls.autoRotateSpeed = 0.2;
+            controls.autoRotateSpeed = 0.1; // 极慢旋转
 
             const renderScene = new RenderPass(scene, camera);
             const bloomPass = new UnrealBloomPass(
@@ -250,16 +250,14 @@
             types = new Int8Array(config.particleCount);
             uvData = new Float32Array(config.particleCount * 2);
             colorAttributes = new Float32Array(config.particleCount * 3);
-            lifeData = new Float32Array(config.particleCount); // 存储每个粒子的生命周期 (距离)
+            lifeData = new Float32Array(config.particleCount); 
 
             const c = new THREE.Color(config.themeColor);
 
             for (let i = 0; i < config.particleCount; i++) {
-                // 初始化位置：在中心附近
-                positions[i * 3] = (Math.random() - 0.5) * 5;
-                positions[i * 3 + 1] = (Math.random() - 0.5) * 5;
-                positions[i * 3 + 2] = (Math.random() - 0.5) * 5;
-
+                positions[i * 3] = (Math.random() - 0.5) * 100;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 100;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 100;
                 colors[i * 3] = c.r; colors[i * 3 + 1] = c.g; colors[i * 3 + 2] = c.b;
             }
 
@@ -286,11 +284,10 @@
             const canvas = document.createElement('canvas');
             canvas.width = 64; canvas.height = 64;
             const ctx = canvas.getContext('2d');
-            // 散景效果：中心实，边缘非常柔和
+            // 方形像素感 + 柔光晕
             const grad = ctx.createRadialGradient(32,32,0,32,32,32);
             grad.addColorStop(0, 'rgba(255,255,255,1)');
-            grad.addColorStop(0.2, 'rgba(255,255,255,0.8)');
-            grad.addColorStop(0.5, 'rgba(255,255,255,0.2)');
+            grad.addColorStop(0.3, 'rgba(255,255,255,0.5)');
             grad.addColorStop(1, 'rgba(0,0,0,0)');
             ctx.fillStyle = grad;
             ctx.fillRect(0,0,64,64);
@@ -304,66 +301,127 @@
             const count = config.particleCount;
             let idx = 0;
 
-            if (type === 'nebula') {
-                // ==========================================
-                // 1. SINGULARITY (奇点/径向爆发)
-                // ==========================================
+            // UI Feedback
+            if(type === 'sphere') { // Cyber Cloud
+                titleEl.style.backgroundImage = 'linear-gradient(180deg, #fff, #0f0, #fa0)';
+                if(config.useDynamicColor) updateGUIColor('#00ff00');
+            } else if (type === 'nebula') {
                 titleEl.style.backgroundImage = 'linear-gradient(135deg, #fff, #ffcc00, #ff00ff)';
+            } else if (type === 'origin') {
+                titleEl.style.backgroundImage = 'linear-gradient(180deg, #fff, #ffae00)';
+            } else if (type === 'zen') {
+                titleEl.style.backgroundImage = 'linear-gradient(180deg, #fff, #999)';
+            }
+
+            if (type === 'sphere') { 
+                // ==========================================
+                // NEW: CYBER CLOUD (数字积雨云)
+                // ==========================================
+                
+                // 分配比例
+                // 0: Dark Cumulus (40%)
+                // 1: Matrix Core (30%)
+                // 2: Viscous Drips (20%)
+                // 3: Background Rain (10%)
                 
                 for (let i = 0; i < count; i++) {
-                    // 分配类型
-                    // Type 0: Golden Core (最快，最亮)
-                    // Type 1: Magenta Shockwave (中速)
-                    // Type 2: Cyan Mist (最慢，最广)
                     const rand = Math.random();
-                    let pType = 2;
-                    if(rand < 0.3) pType = 0;
-                    else if(rand < 0.65) pType = 1;
                     
-                    types[i] = pType;
+                    if (i < count * 0.4) {
+                        // Type 0: Dark Cumulus (暗黑云团)
+                        // 扁平的球体 + 强噪声
+                        types[i] = 0;
+                        const r = 20 + Math.random() * 5;
+                        const theta = Math.random() * Math.PI * 2;
+                        const phi = Math.acos(2 * Math.random() - 1);
+                        
+                        // 压扁 Y 轴
+                        const x = r * Math.sin(phi) * Math.cos(theta) * 1.2;
+                        const y = r * Math.sin(phi) * Math.sin(theta) * 0.6 + 5; // 稍微抬高
+                        const z = r * Math.cos(phi) * 1.2;
 
-                    // 计算爆炸方向 (Normalized Vector)
-                    const theta = Math.random() * Math.PI * 2;
-                    const phi = Math.acos(2 * Math.random() - 1);
-                    
-                    const nx = Math.sin(phi) * Math.cos(theta);
-                    const ny = Math.sin(phi) * Math.sin(theta);
-                    const nz = Math.cos(phi);
+                        targets[idx] = x; targets[idx+1] = y; targets[idx+2] = z;
+                        initialPositions[idx] = x; initialPositions[idx+1] = y; initialPositions[idx+2] = z;
 
-                    // initialPositions 存储方向向量 * 随机速度差异
-                    const speedVar = 0.5 + Math.random() * 0.5;
-                    initialPositions[idx] = nx * speedVar;
-                    initialPositions[idx+1] = ny * speedVar;
-                    initialPositions[idx+2] = nz * speedVar;
+                        // 颜色：深灰/黑 (0.1, 0.15, 0.15)
+                        colorAttributes[idx]=0.1; colorAttributes[idx+1]=0.12; colorAttributes[idx+2]=0.12;
 
-                    // 初始位置：根据类型分布在“时间轴”上，避免一开始所有粒子都在0点
-                    // 模拟一个已经发生的爆炸瞬间
-                    const startDist = Math.random() * 60; // 0-60 radius
-                    targets[idx] = nx * startDist;
-                    targets[idx+1] = ny * startDist;
-                    targets[idx+2] = nz * startDist;
-                    
-                    // lifeData 存储当前距离，用于循环
-                    lifeData[i] = startDist;
+                    } else if (i < count * 0.7) {
+                        // Type 1: Matrix Core (矩阵核心)
+                        // 内部垂直排列的点阵
+                        types[i] = 1;
+                        const r = 15 * Math.sqrt(Math.random()); // 内部
+                        const theta = Math.random() * Math.PI * 2;
+                        const h = (Math.random() - 0.5) * 15; // 垂直柱状
+                        
+                        targets[idx] = r * Math.cos(theta);
+                        targets[idx+1] = h + 5;
+                        targets[idx+2] = r * Math.sin(theta);
+                        initialPositions[idx] = targets[idx]; initialPositions[idx+1] = targets[idx+1]; initialPositions[idx+2] = targets[idx+2];
 
-                    // 预设颜色 (Muted Palette)
-                    // Gold: 1.0, 0.8, 0.0
-                    // Magenta: 1.0, 0.0, 0.8
-                    // Cyan: 0.0, 0.9, 1.0
-                    if (pType === 0) { // Gold
-                         colorAttributes[idx]=1.0; colorAttributes[idx+1]=0.8; colorAttributes[idx+2]=0.0;
-                    } else if (pType === 1) { // Magenta
-                         colorAttributes[idx]=1.0; colorAttributes[idx+1]=0.0; colorAttributes[idx+2]=0.8;
-                    } else { // Cyan
-                         colorAttributes[idx]=0.0; colorAttributes[idx+1]=0.9; colorAttributes[idx+2]=1.0;
+                        // 颜色：荧光绿 (0, 1, 0.2)
+                        colorAttributes[idx]=0.0; colorAttributes[idx+1]=1.0; colorAttributes[idx+2]=0.2;
+
+                    } else if (i < count * 0.9) {
+                        // Type 2: Viscous Drips (黏性液滴)
+                        // 集中在云底
+                        types[i] = 2;
+                        const r = 18 * Math.sqrt(Math.random());
+                        const theta = Math.random() * Math.PI * 2;
+                        
+                        targets[idx] = r * Math.cos(theta);
+                        targets[idx+1] = -5 + Math.random() * 5; // 云底起始位置
+                        targets[idx+2] = r * Math.sin(theta);
+                        
+                        // lifeData 存储下坠偏移量
+                        lifeData[i] = Math.random() * 50; // 随机初始下坠进度
+
+                        // 颜色：琥珀金 (1.0, 0.6, 0.0)
+                        colorAttributes[idx]=1.0; colorAttributes[idx+1]=0.55; colorAttributes[idx+2]=0.0;
+
+                    } else {
+                        // Type 3: Background Rain/Stardust (背景光流)
+                        types[i] = 3;
+                        const r = 50 + Math.random() * 50; // 远处
+                        const theta = Math.random() * Math.PI * 2;
+                        const h = (Math.random() - 0.5) * 100;
+                        
+                        targets[idx] = r * Math.cos(theta);
+                        targets[idx+1] = h;
+                        targets[idx+2] = r * Math.sin(theta);
+                        
+                        // 颜色：淡琥珀色 (0.8, 0.5, 0.2)
+                        colorAttributes[idx]=0.8; colorAttributes[idx+1]=0.5; colorAttributes[idx+2]=0.2;
                     }
                     
                     idx += 3;
                 }
             } 
+            else if (type === 'nebula') {
+                // Singularity Logic (Reused)
+                for (let i = 0; i < count; i++) {
+                    const rand = Math.random();
+                    let pType = 2;
+                    if(rand < 0.3) pType = 0; else if(rand < 0.65) pType = 1;
+                    types[i] = pType;
+                    const theta = Math.random() * Math.PI * 2;
+                    const phi = Math.acos(2 * Math.random() - 1);
+                    const nx = Math.sin(phi) * Math.cos(theta);
+                    const ny = Math.sin(phi) * Math.sin(theta);
+                    const nz = Math.cos(phi);
+                    const speedVar = 0.5 + Math.random() * 0.5;
+                    initialPositions[idx] = nx * speedVar; initialPositions[idx+1] = ny * speedVar; initialPositions[idx+2] = nz * speedVar;
+                    const startDist = Math.random() * 60;
+                    targets[idx] = nx * startDist; targets[idx+1] = ny * startDist; targets[idx+2] = nz * startDist;
+                    lifeData[i] = startDist;
+                    if (pType === 0) { colorAttributes[idx]=1.0; colorAttributes[idx+1]=0.8; colorAttributes[idx+2]=0.0; } 
+                    else if (pType === 1) { colorAttributes[idx]=1.0; colorAttributes[idx+1]=0.0; colorAttributes[idx+2]=0.8; } 
+                    else { colorAttributes[idx]=0.0; colorAttributes[idx+1]=0.9; colorAttributes[idx+2]=1.0; }
+                    idx += 3;
+                }
+            } 
             else if (type === 'origin') {
-                // Origin Logic (Original)
-                titleEl.style.backgroundImage = 'linear-gradient(180deg, #fff, #ffae00)';
+                // Origin Logic
                 const coreCount = Math.floor(count * 0.55);
                 const goldenRatio = (1 + Math.sqrt(5)) / 2;
                 for (let i = 0; i < coreCount; i++) {
@@ -371,12 +429,8 @@
                     const theta = 2 * Math.PI * i / goldenRatio;
                     const phi = Math.acos(1 - 2 * (i + 0.5) / coreCount);
                     const r = 12;
-                    targets[idx] = r * Math.sin(phi) * Math.cos(theta);
-                    targets[idx+1] = r * Math.sin(phi) * Math.sin(theta);
-                    targets[idx+2] = r * Math.cos(phi);
-                    initialPositions[idx] = Math.sin(phi) * Math.cos(theta);
-                    initialPositions[idx+1] = Math.sin(phi) * Math.sin(theta);
-                    initialPositions[idx+2] = Math.cos(phi);
+                    targets[idx] = r * Math.sin(phi) * Math.cos(theta); targets[idx+1] = r * Math.sin(phi) * Math.sin(theta); targets[idx+2] = r * Math.cos(phi);
+                    initialPositions[idx] = Math.sin(phi) * Math.cos(theta); initialPositions[idx+1] = Math.sin(phi) * Math.sin(theta); initialPositions[idx+2] = Math.cos(phi);
                     idx += 3;
                 }
                 const latLines = 24, lonLines = 36;
@@ -387,55 +441,28 @@
                     let u, v, radius = 35 + Math.random()*2;
                     if (isLat) {
                         const lineIdx = Math.floor((relativeI/2) / ((count-coreCount)/2/latLines));
-                        v = (lineIdx/latLines) * Math.PI;
-                        u = (relativeI % 100) / 100 * Math.PI * 2;
+                        v = (lineIdx/latLines) * Math.PI; u = (relativeI % 100) / 100 * Math.PI * 2;
                     } else {
                         const lineIdx = Math.floor((relativeI/2) / ((count-coreCount)/2/lonLines));
-                        u = (lineIdx/lonLines) * Math.PI * 2;
-                        v = (relativeI % 100) / 100 * Math.PI;
+                        u = (lineIdx/lonLines) * Math.PI * 2; v = (relativeI % 100) / 100 * Math.PI;
                     }
-                    targets[idx] = radius * Math.sin(v) * Math.cos(u);
-                    targets[idx+1] = radius * Math.sin(v) * Math.sin(u);
-                    targets[idx+2] = radius * Math.cos(v);
-                    uvData[i*2] = u; uvData[i*2+1] = v;
-                    idx += 3;
+                    targets[idx] = radius * Math.sin(v) * Math.cos(u); targets[idx+1] = radius * Math.sin(v) * Math.sin(u); targets[idx+2] = radius * Math.cos(v);
+                    uvData[i*2] = u; uvData[i*2+1] = v; idx += 3;
                 }
             } 
             else if (type === 'zen') {
-                // Zen Logic (Original)
-                titleEl.style.backgroundImage = 'linear-gradient(180deg, #fff, #999)';
+                // Zen Logic
                 for (let i = 0; i < count; i++) {
                     if (i < count * 0.5) {
                         types[i] = 0; 
-                        const r = 13 * Math.cbrt(Math.random());
-                        const theta = Math.acos(2 * Math.random() - 1);
-                        const phi = Math.random() * Math.PI * 2;
-                        targets[idx] = r * Math.sin(theta) * Math.cos(phi);
-                        targets[idx+1] = r * Math.sin(theta) * Math.sin(phi);
-                        targets[idx+2] = r * Math.cos(theta);
+                        const r = 13 * Math.cbrt(Math.random()); const theta = Math.acos(2 * Math.random() - 1); const phi = Math.random() * Math.PI * 2;
+                        targets[idx] = r * Math.sin(theta) * Math.cos(phi); targets[idx+1] = r * Math.sin(theta) * Math.sin(phi); targets[idx+2] = r * Math.cos(theta);
                     } else {
                         types[i] = 1;
-                        const rBase = 18 + Math.random() * 45;
-                        const angle = Math.random() * Math.PI * 2;
-                        initialPositions[idx] = rBase * Math.cos(angle);
-                        initialPositions[idx+1] = 0;
-                        initialPositions[idx+2] = rBase * Math.sin(angle);
-                        targets[idx] = initialPositions[idx];
-                        targets[idx+1] = 0;
-                        targets[idx+2] = initialPositions[idx+2];
+                        const rBase = 18 + Math.random() * 45; const angle = Math.random() * Math.PI * 2;
+                        initialPositions[idx] = rBase * Math.cos(angle); initialPositions[idx+1] = 0; initialPositions[idx+2] = rBase * Math.sin(angle);
+                        targets[idx] = initialPositions[idx]; targets[idx+1] = 0; targets[idx+2] = initialPositions[idx+2];
                     }
-                    idx += 3;
-                }
-            } 
-            else {
-                // Sphere
-                 for (let i = 0; i < count; i++) {
-                    const r = 30 * Math.cbrt(Math.random());
-                    const theta = Math.random() * Math.PI * 2;
-                    const phi = Math.acos(2 * Math.random() - 1);
-                    targets[idx] = r*Math.sin(phi)*Math.cos(theta); 
-                    targets[idx+1] = r*Math.sin(phi)*Math.sin(theta); 
-                    targets[idx+2] = r*Math.cos(phi);
                     idx += 3;
                 }
             }
@@ -447,7 +474,6 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            // Audio Analysis
             let bass = 0, treble = 0;
             if (isPlaying && audioAnalyser) {
                 audioAnalyser.getByteFrequencyData(dataArray);
@@ -465,163 +491,168 @@
             const bassImpact = bass * config.bassSensitivity;
             const trebleImpact = treble * config.trebleSensitivity;
 
-            // Global Material Props
             particles.material.size = config.particleSize;
             particles.material.opacity = config.particleOpacity;
             const customColor = new THREE.Color(config.themeColor);
 
-            if (config.shape === 'nebula') {
+            if (config.shape === 'sphere') { 
                 // ==========================================
-                // SINGULARITY PHYSICS (循环爆炸)
+                // CYBER CLOUD PHYSICS (数字积雨云)
                 // ==========================================
                 
-                const maxDist = 80; // 视界消失点
-                const speedBase = 0.1 * config.flowSpeed;
+                const fallSpeed = config.flowSpeed * 0.2;
 
                 for (let i = 0; i < config.particleCount; i++) {
                     const idx = i * 3;
+                    const type = types[i];
                     
-                    // 1. 推进生命周期 (距离)
-                    // Gold 跑得快，Cyan 跑得慢
-                    let typeSpeed = 1.0;
-                    if(types[i]===0) typeSpeed = 1.5; // Gold
-                    else if(types[i]===2) typeSpeed = 0.7; // Cyan mist
-
-                    // 核心运动：沿径向向外
-                    let currentDist = lifeData[i];
-                    currentDist += speedBase * typeSpeed * (1 + bassImpact * 0.5); // 低音加速爆炸
-                    
-                    // 2. 循环重置 (Reset to Singularity)
-                    if (currentDist > maxDist) {
-                        currentDist = Math.random() * 5; // 回到中心
-                    }
-                    lifeData[i] = currentDist;
-
-                    // 3. 计算位置：方向 * 距离
-                    const nx = initialPositions[idx]; // 这里存的是带随机的方向向量
-                    const ny = initialPositions[idx+1];
-                    const nz = initialPositions[idx+2];
-                    
-                    // 4. 冲击波涟漪 (Shockwave Ripple)
-                    // 在线性距离上叠加一个正弦波，波随时间向外推
-                    // sin(distance - time)
-                    const ripple = Math.sin(currentDist * 0.2 - time * 2.0) * (bassImpact * 2.0);
-                    const finalDist = currentDist + ripple;
-
-                    positionsArray[idx] = nx * finalDist;
-                    positionsArray[idx+1] = ny * finalDist;
-                    positionsArray[idx+2] = nz * finalDist;
-
-                    // 5. 颜色与消融 (Dissolving)
-                    if (config.useDynamicColor) {
-                        let r = colorAttributes[idx];
-                        let g = colorAttributes[idx+1];
-                        let b = colorAttributes[idx+2];
+                    if (type === 0 || type === 1) { 
+                        // [Cloud Body & Matrix Core]
+                        // 呼吸律动 + 微弱噪声
+                        const tx = targets[idx];
+                        const ty = targets[idx+1];
+                        const tz = targets[idx+2];
                         
-                        // 中心极亮 (White burst)
-                        const centerIntensity = Math.max(0, 10 - currentDist) / 10;
-                        r += centerIntensity; g += centerIntensity; b += centerIntensity;
+                        // 缓慢的有机变形
+                        const noise = Math.sin(tx*0.1 + time*0.5) * 0.5;
+                        const breatheFactor = breath + bassImpact * 0.05; // 呼吸
 
-                        // 边缘消融 (Fade out at horizon)
-                        const fade = 1.0 - Math.pow(currentDist / maxDist, 2); // 指数衰减
+                        // Matrix Core 闪烁
+                        let flash = 0;
+                        if (type === 1) {
+                            flash = (Math.random() > 0.95) ? trebleImpact : 0; // 随机代码闪烁
+                        }
+
+                        positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], tx * breatheFactor + noise, 0.05);
+                        positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], ty * breatheFactor + noise, 0.05);
+                        positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], tz * breatheFactor + noise, 0.05);
                         
-                        // Treble Flash
-                        r += trebleImpact * 0.3; g += trebleImpact * 0.3; b += trebleImpact * 0.3;
+                        // 颜色混合
+                        if(config.useDynamicColor) {
+                            colorsArray[idx] = colorAttributes[idx] + flash;
+                            colorsArray[idx+1] = colorAttributes[idx+1] + flash;
+                            colorsArray[idx+2] = colorAttributes[idx+2] + flash;
+                        } else {
+                            colorsArray[idx] = customColor.r; colorsArray[idx+1] = customColor.g; colorsArray[idx+2] = customColor.b;
+                        }
+
+                    } else if (type === 2) {
+                        // [Viscous Drips] 黏性液滴
+                        // 逻辑：随时间 y 减小，速度呈现 exponential 增长 (模拟重力加速度和黏滞断裂)
                         
-                        // 应用 Fade 到颜色亮度 (模拟透明度，因为Points不支持单点透明)
-                        colorsArray[idx] = r * fade;
-                        colorsArray[idx+1] = g * fade;
-                        colorsArray[idx+2] = b * fade;
-                    } else {
-                        colorsArray[idx] = customColor.r; colorsArray[idx+1] = customColor.g; colorsArray[idx+2] = customColor.b;
+                        let dripY = lifeData[i]; // 这里存的是偏移量
+                        
+                        // 黏滞模拟: 先慢后快
+                        // time factor
+                        dripY += fallSpeed * (1 + dripY * 0.05); 
+                        
+                        if (dripY > 40) dripY = 0; // 重置
+                        lifeData[i] = dripY;
+
+                        const originY = targets[idx+1];
+                        const stretch = dripY * 0.1; // 拉长效果 (在点云中表现为间距变大，这里简化为位置下移)
+
+                        positionsArray[idx] = targets[idx];
+                        positionsArray[idx+1] = originY - dripY; // 向下移动
+                        positionsArray[idx+2] = targets[idx+2];
+                        
+                        // 颜色：琥珀色 + 闪烁
+                        if(config.useDynamicColor) {
+                            colorsArray[idx] = colorAttributes[idx];
+                            colorsArray[idx+1] = colorAttributes[idx+1];
+                            colorsArray[idx+2] = colorAttributes[idx+2];
+                        }
+
+                    } else if (type === 3) {
+                        // [Background Rain]
+                        let rainY = positionsArray[idx+1];
+                        rainY -= fallSpeed * 5; // 快速下落
+                        if (rainY < -50) rainY = 50;
+                        positionsArray[idx+1] = rainY;
+                        
+                        // 保持 X Z 不变
+                        if(config.useDynamicColor) {
+                            colorsArray[idx] = colorAttributes[idx];
+                            colorsArray[idx+1] = colorAttributes[idx+1];
+                            colorsArray[idx+2] = colorAttributes[idx+2];
+                        }
                     }
                 }
-                
-                // 极慢的整体漂移
+                // 极慢旋转
                 particles.rotation.y = time * 0.05 * config.rotationSpeed;
 
             } 
-            else if (config.shape === 'origin') {
-                // ORIGIN
+            else if (config.shape === 'nebula') {
+                // Singularity Physics
+                const maxDist = 80; const speedBase = 0.1 * config.flowSpeed;
                 for (let i = 0; i < config.particleCount; i++) {
                     const idx = i * 3;
-                    if (types[i] === 0) { // Core
+                    let typeSpeed = 1.0; if(types[i]===0) typeSpeed=1.5; else if(types[i]===2) typeSpeed=0.7;
+                    let currentDist = lifeData[i]; currentDist += speedBase * typeSpeed * (1 + bassImpact * 0.5);
+                    if (currentDist > maxDist) currentDist = Math.random() * 5;
+                    lifeData[i] = currentDist;
+                    const nx = initialPositions[idx]; const ny = initialPositions[idx+1]; const nz = initialPositions[idx+2];
+                    const ripple = Math.sin(currentDist * 0.2 - time * 2.0) * (bassImpact * 2.0);
+                    const finalDist = currentDist + ripple;
+                    positionsArray[idx] = nx * finalDist; positionsArray[idx+1] = ny * finalDist; positionsArray[idx+2] = nz * finalDist;
+                    if (config.useDynamicColor) {
+                        let r = colorAttributes[idx]; let g = colorAttributes[idx+1]; let b = colorAttributes[idx+2];
+                        const centerIntensity = Math.max(0, 10 - currentDist) / 10;
+                        const fade = 1.0 - Math.pow(currentDist / maxDist, 2);
+                        r += centerIntensity + trebleImpact * 0.3; g += centerIntensity + trebleImpact * 0.3; b += centerIntensity + trebleImpact * 0.3;
+                        colorsArray[idx] = r * fade; colorsArray[idx+1] = g * fade; colorsArray[idx+2] = b * fade;
+                    } else { colorsArray[idx] = customColor.r; colorsArray[idx+1] = customColor.g; colorsArray[idx+2] = customColor.b; }
+                }
+                particles.rotation.y = time * 0.05 * config.rotationSpeed;
+            } 
+            else if (config.shape === 'origin') {
+                // Origin Physics
+                for (let i = 0; i < config.particleCount; i++) {
+                    const idx = i * 3;
+                    if (types[i] === 0) {
                         const nx = initialPositions[idx], ny = initialPositions[idx+1], nz = initialPositions[idx+2];
                         const tx = targets[idx], ty = targets[idx+1], tz = targets[idx+2];
-                        const noiseFreq = 4.0;
-                        const liquidTime = time * config.flowSpeed * config.flowDirection;
+                        const noiseFreq = 4.0; const liquidTime = time * config.flowSpeed * config.flowDirection;
                         const displacement = (Math.sin(nx * noiseFreq + liquidTime) * Math.cos(ny * noiseFreq + liquidTime) + Math.sin(ny * 3 - liquidTime) * 0.5) * 3.0; 
                         const finalDisp = displacement + (bassImpact * 2.0);
                         if (config.useDynamicColor) {
                             const heat = displacement / 3.0; 
                             let r = 1.0 + trebleImpact * 0.5; let g = 0.8 + heat * 0.2 + trebleImpact * 0.5; let b = 0.0 + heat * 0.4 + trebleImpact; 
                             colorsArray[idx] = Math.min(r, 1); colorsArray[idx+1] = Math.min(g, 1); colorsArray[idx+2] = Math.min(b, 1);
-                        } else {
-                            colorsArray[idx] = customColor.r + trebleImpact; colorsArray[idx+1] = customColor.g + trebleImpact; colorsArray[idx+2] = customColor.b + trebleImpact;
-                        }
-                        positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], tx + nx * finalDisp, 0.1);
-                        positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], ty + ny * finalDisp, 0.1);
-                        positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], tz + nz * finalDisp, 0.1);
-                    } else { // Grid
+                        } else { colorsArray[idx] = customColor.r + trebleImpact; colorsArray[idx+1] = customColor.g + trebleImpact; colorsArray[idx+2] = customColor.b + trebleImpact; }
+                        positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], tx + nx * finalDisp, 0.1); positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], ty + ny * finalDisp, 0.1); positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], tz + nz * finalDisp, 0.1);
+                    } else {
                         const tx = targets[idx], ty = targets[idx+1], tz = targets[idx+2];
                         const u = uvData[i*2], v = uvData[i*2+1];
                         const twist = Math.sin(time * 0.2) * 5.0 + 5.0;
                         const wave = Math.sin(u * 5 + time * 0.2 * config.flowDirection) * Math.cos(v * 5) * twist;
                         if (config.useDynamicColor) {
                             const galaxyFactor = (Math.sin(time * 0.2) + 1) * 0.5;
-                            colorsArray[idx] = THREE.MathUtils.lerp(0.2, 0.8, galaxyFactor) + trebleImpact;
-                            colorsArray[idx+1] = THREE.MathUtils.lerp(0.4, 0.6, galaxyFactor) + trebleImpact;
-                            colorsArray[idx+2] = THREE.MathUtils.lerp(0.6, 0.2, galaxyFactor) + trebleImpact;
-                        } else {
-                            colorsArray[idx] = customColor.r * 0.5 + trebleImpact; colorsArray[idx+1] = customColor.g * 0.5 + trebleImpact; colorsArray[idx+2] = customColor.b * 0.5 + trebleImpact;
-                        }
-                        positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], tx + wave, 0.05);
-                        positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], ty + Math.sin(u*3)*twist*0.5, 0.05);
-                        positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], tz + Math.cos(u*5)*twist, 0.05);
+                            colorsArray[idx] = THREE.MathUtils.lerp(0.2, 0.8, galaxyFactor) + trebleImpact; colorsArray[idx+1] = THREE.MathUtils.lerp(0.4, 0.6, galaxyFactor) + trebleImpact; colorsArray[idx+2] = THREE.MathUtils.lerp(0.6, 0.2, galaxyFactor) + trebleImpact;
+                        } else { colorsArray[idx] = customColor.r * 0.5 + trebleImpact; colorsArray[idx+1] = customColor.g * 0.5 + trebleImpact; colorsArray[idx+2] = customColor.b * 0.5 + trebleImpact; }
+                        positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], tx + wave, 0.05); positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], ty + Math.sin(u*3)*twist*0.5, 0.05); positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], tz + Math.cos(u*5)*twist, 0.05);
                     }
                 }
                 particles.rotation.y += config.rotationSpeed * config.flowDirection;
             } 
             else if (config.shape === 'zen') {
-                // ZEN
+                // Zen Physics
                 const rippleSpeed = time * 0.8 * config.flowSpeed * config.flowDirection;
                 for (let i = 0; i < config.particleCount; i++) {
                     const idx = i * 3;
-                    let cR = config.useDynamicColor ? 1.0 : customColor.r;
-                    let cG = config.useDynamicColor ? 1.0 : customColor.g;
-                    let cB = config.useDynamicColor ? 1.0 : customColor.b;
-                    colorsArray[idx] = cR + (Math.random()-0.5)*trebleImpact; 
-                    colorsArray[idx+1] = cG + (Math.random()-0.5)*trebleImpact;
-                    colorsArray[idx+2] = cB + (Math.random()-0.5)*trebleImpact;
-
-                    if (types[i] === 0) { // Core
+                    let cR = config.useDynamicColor ? 1.0 : customColor.r; let cG = config.useDynamicColor ? 1.0 : customColor.g; let cB = config.useDynamicColor ? 1.0 : customColor.b;
+                    colorsArray[idx] = cR + (Math.random()-0.5)*trebleImpact; colorsArray[idx+1] = cG + (Math.random()-0.5)*trebleImpact; colorsArray[idx+2] = cB + (Math.random()-0.5)*trebleImpact;
+                    if (types[i] === 0) {
                         const tx = targets[idx], ty = targets[idx+1], tz = targets[idx+2];
                         const noise = Math.sin(tx * 0.1 + time) * Math.cos(ty * 0.1 + time) * 0.5;
-                        positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], tx * breath + tx * bassImpact * 0.2 + noise, 0.05);
-                        positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], ty * breath + ty * bassImpact * 0.2 + noise, 0.05);
-                        positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], tz * breath + tz * bassImpact * 0.2 + noise, 0.05);
-                    } else { // Ripples
+                        positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], tx * breath + tx * bassImpact * 0.2 + noise, 0.05); positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], ty * breath + ty * bassImpact * 0.2 + noise, 0.05); positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], tz * breath + tz * bassImpact * 0.2 + noise, 0.05);
+                    } else {
                         const ox = initialPositions[idx], oz = initialPositions[idx+2];
-                        const dist = Math.sqrt(ox*ox + oz*oz);
-                        const angle = Math.atan2(oz, ox);
+                        const dist = Math.sqrt(ox*ox + oz*oz); const angle = Math.atan2(oz, ox);
                         const wave = Math.sin(angle * 4 + dist * 0.2 - rippleSpeed) * Math.cos(dist * 0.1);
                         const amplitude = 2.0 * (1 + bassImpact * 2);
-                        positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], ox, 0.05);
-                        positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], wave * amplitude, 0.1);
-                        positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], oz, 0.05);
+                        positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], ox, 0.05); positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], wave * amplitude, 0.1); positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], oz, 0.05);
                     }
-                }
-                particles.rotation.y += config.rotationSpeed * config.flowDirection;
-            } 
-            else {
-                // Generic
-                const moveSpeed = 0.05;
-                for (let i = 0; i < config.particleCount; i++) {
-                    const idx = i * 3;
-                    colorsArray[idx] = customColor.r; colorsArray[idx+1] = customColor.g; colorsArray[idx+2] = customColor.b;
-                    positionsArray[idx] += (targets[idx] - positionsArray[idx]) * moveSpeed;
-                    positionsArray[idx+1] += (targets[idx+1] - positionsArray[idx+1]) * moveSpeed;
-                    positionsArray[idx+2] += (targets[idx+2] - positionsArray[idx+2]) * moveSpeed;
                 }
                 particles.rotation.y += config.rotationSpeed * config.flowDirection;
             }
@@ -634,13 +665,11 @@
 
         function initGUI(bloomPass) {
             gui = new GUI({ title: 'VISUALIZER PANEL' });
-            
             const folderScene = gui.addFolder('Theme & Form');
-            // Nebula 选项保留ID，但UI显示 Singularity
+            // 'sphere' 显示名为 'Cyber Cloud'
             folderScene.add(config, 'shape', ['origin', 'zen', 'nebula', 'sphere'])
                        .name('Mode')
                        .onChange(val => calculateShape(val));
-                       
             folderScene.add(config, 'useDynamicColor').name('Auto Color');
             folderScene.addColor(config, 'themeColor').name('Manual Color');
 
@@ -653,76 +682,56 @@
             folderMotion.add(config, 'rotationSpeed', 0, 0.02).name('Spin');
             
             const folderAudio = gui.addFolder('Audio Response');
-            folderAudio.add(config, 'bassSensitivity', 0, 3.0).name('Bass (Shockwave)');
+            folderAudio.add(config, 'bassSensitivity', 0, 3.0).name('Bass (Pulse)');
             folderAudio.add(config, 'trebleSensitivity', 0, 3.0).name('Treble (Flash)');
 
             const folderFX = gui.addFolder('Post-Processing');
             folderFX.add(config, 'bloomStrength', 0, 3.0).name('Glow Intensity').onChange(v => bloomPass.strength = v);
             
-            if(window.innerWidth > 600) {
-                folderScene.open();
-                folderAudio.open();
-            }
+            if(window.innerWidth > 600) { folderScene.open(); folderAudio.open(); }
         }
 
         function updateGUIColor(hex) {
             config.themeColor = hex;
-            if(gui) gui.controllersRecursive().forEach(c => {
-                if(c.property === 'themeColor') c.updateDisplay();
-            });
+            if(gui) gui.controllersRecursive().forEach(c => { if(c.property === 'themeColor') c.updateDisplay(); });
         }
-
         function onMouseMove(e) {
             const x = e.clientX / window.innerWidth;
-            if(config.shape !== 'nebula') {
+            if(config.shape !== 'nebula' && config.shape !== 'sphere') {
                  titleEl.style.backgroundImage = `linear-gradient(${45 + x*40}deg, #fff, #a1c4fd)`;
             }
         }
-
         uploadBtn.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if(!file) return;
+            const file = e.target.files[0]; if(!file) return;
             songTitleEl.innerText = file.name.replace(/\.[^/.]+$/, "");
             const reader = new FileReader();
             reader.onload = (ev) => {
                 if(audioContext) audioContext.close();
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 audioContext.decodeAudioData(ev.target.result, buffer => {
-                    audioBuffer = buffer;
-                    audioDuration = buffer.duration;
-                    playAudio(0);
+                    audioBuffer = buffer; audioDuration = buffer.duration; playAudio(0);
                 });
-                audioAnalyser = audioContext.createAnalyser();
-                audioAnalyser.fftSize = 512;
+                audioAnalyser = audioContext.createAnalyser(); audioAnalyser.fftSize = 512;
                 dataArray = new Uint8Array(audioAnalyser.frequencyBinCount);
             };
             reader.readAsArrayBuffer(file);
         });
-
         function playAudio(offset) {
             if (audioSource) audioSource.stop();
-            audioSource = audioContext.createBufferSource();
-            audioSource.buffer = audioBuffer;
-            audioSource.connect(audioAnalyser);
-            audioAnalyser.connect(audioContext.destination);
-            audioSource.start(0, offset);
-            isPlaying = true;
-            playBtn.innerText = "Pause";
+            audioSource = audioContext.createBufferSource(); audioSource.buffer = audioBuffer;
+            audioSource.connect(audioAnalyser); audioAnalyser.connect(audioContext.destination);
+            audioSource.start(0, offset); isPlaying = true; playBtn.innerText = "Pause";
             if(window.pTimer) clearInterval(window.pTimer);
             const startT = audioContext.currentTime - offset;
             window.pTimer = setInterval(() => {
                 if(!isPlaying) return;
-                const curr = audioContext.currentTime - startT;
-                const pct = (curr / audioDuration) * 100;
-                progressBar.value = pct;
-                const m = Math.floor(curr/60);
-                const s = Math.floor(curr%60).toString().padStart(2,'0');
+                const curr = audioContext.currentTime - startT; const pct = (curr / audioDuration) * 100;
+                progressBar.value = pct; const m = Math.floor(curr/60); const s = Math.floor(curr%60).toString().padStart(2,'0');
                 timeDisplay.innerText = `${m}:${s}`;
                 if(pct>=100) { isPlaying=false; playBtn.innerText="Replay"; clearInterval(window.pTimer); }
             }, 200);
         }
-
         playBtn.addEventListener('click', () => {
             if(!audioContext) return;
             if(isPlaying) { audioContext.suspend(); isPlaying=false; playBtn.innerText="Resume"; }
@@ -737,7 +746,6 @@
         document.getElementById('fullscreen-btn').addEventListener('click', () => {
             if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen();
         });
-
         init();
     </script>
 </body>
