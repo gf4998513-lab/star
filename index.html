@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Soul - Origin & Zen</title>
+    <title>Soul - Origin: Liquid Gold</title>
     <style>
         /* --- 沉浸式深空背景 --- */
         body, html {
@@ -17,7 +17,7 @@
             user-select: none;
         }
 
-        /* 顶部 LOGO */
+        /* 顶部 LOGO - 动态渐变 */
         #header-title {
             position: absolute;
             top: 25px;
@@ -29,13 +29,13 @@
             letter-spacing: 12px;
             z-index: 10;
             pointer-events: none;
-            /* 默认金色，JS会动态改 */
-            background-image: linear-gradient(180deg, #fff, #cca300);
+            /* 默认金色 */
+            background-image: linear-gradient(180deg, #ffffff 0%, #ffcc00 40%, #b8860b 100%);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            text-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
-            transition: opacity 1s, background-image 1s;
+            text-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+            transition: opacity 1s;
         }
 
         /* UI 容器 */
@@ -45,20 +45,20 @@
             left: 30px;
             z-index: 20;
             color: #dcdcdc;
-            background: rgba(10, 10, 10, 0.7);
-            backdrop-filter: blur(12px);
+            background: rgba(8, 8, 8, 0.85);
+            backdrop-filter: blur(15px);
             padding: 20px;
             border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 215, 0, 0.15); /* 金色微边框 */
             width: 260px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.9);
         }
         
         .control-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
 
         button {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.15);
+            background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+            border: 1px solid rgba(255,255,255,0.2);
             color: #ccc;
             padding: 8px 16px;
             border-radius: 20px;
@@ -66,25 +66,30 @@
             font-size: 0.85rem;
             transition: all 0.4s ease;
         }
-        button:hover { background: rgba(255,255,255,0.2); border-color: #fff; color: #fff; }
+        button:hover { 
+            background: rgba(255, 215, 0, 0.1); 
+            border-color: #ffcc00; 
+            color: #ffcc00; 
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+        }
 
         input[type="range"] {
             -webkit-appearance: none; width: 100%; height: 2px;
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 2px; outline: none; margin: 10px 0;
         }
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none; width: 10px; height: 10px; border-radius: 50%;
-            background: #fff; cursor: pointer; box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            background: #ffcc00; cursor: pointer; box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
         }
         
         .song-info {
             font-size: 0.9rem; font-weight: 300; letter-spacing: 1px;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            margin-bottom: 15px; color: #eee;
+            margin-bottom: 15px; color: #ffcc00;
         }
 
-        .label { font-size: 0.7rem; color: #666; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between; }
+        .label { font-size: 0.7rem; color: #888; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between; }
         #file-input { display: none; }
         
         #clock {
@@ -101,12 +106,13 @@
             display: flex; align-items: center; justify-content: center;
             font-size: 1.2rem; cursor: pointer; transition: all 0.3s;
         }
-        #fullscreen-btn:hover { border-color: #fff; color: #fff; }
+        #fullscreen-btn:hover { border-color: #ffcc00; color: #ffcc00; }
 
         .lil-gui.root { position: absolute; top: 20px; right: 20px; z-index: 100; }
+        
         #loading {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            color: #666; font-size: 0.9rem; letter-spacing: 4px; text-transform: uppercase;
+            color: #b8860b; font-size: 0.9rem; letter-spacing: 4px; text-transform: uppercase;
             pointer-events: none; transition: opacity 0.8s;
         }
     </style>
@@ -114,7 +120,7 @@
 <body>
 
     <div id="header-title">Soul</div>
-    <div id="loading">Initializing Void...</div>
+    <div id="loading">Forging Matter...</div>
 
     <div id="player-controls">
         <div class="song-info" id="current-song">WAITING FOR SIGNAL</div>
@@ -151,26 +157,23 @@
 
         // --- 核心配置 ---
         const config = {
-            particleCount: 20000, 
-            particleSize: 0.2,
-            themeColor: '#ffcc00', 
-            shape: 'origin',       // 默认新形状：Origin (起源)
-            flowSpeed: 0.3,        // 慢速
-            rotationSpeed: 0.0008, 
-            bloomStrength: 1.5,    
-            bloomRadius: 0.6,
-            bloomThreshold: 0.05,
-            breathRate: 0.6        // 呼吸频率
+            particleCount: 22000, 
+            particleSize: 0.22,
+            shape: 'origin',       // 默认: Origin (液态金球 + 坐标网格)
+            flowSpeed: 0.4,        // 有机慢速
+            bloomStrength: 1.6,    // 强光感
+            bloomRadius: 0.5,
+            bloomThreshold: 0.1,
+            breathRate: 0.8        // 呼吸频率
         };
 
         let scene, camera, renderer, composer, controls;
         let particles, particleGeo;
         let positions, targets, initialPositions;
         
-        // 粒子元数据：类型区分 (0=Core, 1=Outer/Ripples/Orbits)
-        let types; 
-        // 粒子元数据：轨道参数 (用于Origin模式的星河旋转)
-        let orbitParams; 
+        // 粒子元数据
+        let types; // 0=Core, 1=Background/Grid
+        let uvData; // 存储UV坐标或角度，用于网格计算
 
         let clock = new THREE.Clock();
         let audioContext, audioAnalyser, audioSource, audioBuffer;
@@ -190,7 +193,7 @@
             scene.fog = new THREE.FogExp2(0x000000, 0.002);
 
             camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 2000);
-            camera.position.set(0, 5, 80);
+            camera.position.set(0, 5, 70);
 
             renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance" });
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -202,7 +205,7 @@
             controls.enableDamping = true;
             controls.dampingFactor = 0.03;
             controls.autoRotate = true;
-            controls.autoRotateSpeed = 0.2;
+            controls.autoRotateSpeed = 0.3;
             controls.enableZoom = true;
 
             const renderScene = new RenderPass(scene, camera);
@@ -233,11 +236,12 @@
             const colors = new Float32Array(config.particleCount * 3);
             
             types = new Int8Array(config.particleCount);
-            orbitParams = new Float32Array(config.particleCount * 3); // 存储轨道的 [radius, angle, speed]
+            uvData = new Float32Array(config.particleCount * 2); // 存储 [u, v]
 
-            const colorObj = new THREE.Color(config.themeColor);
+            const colorObj = new THREE.Color('#ffffff');
 
             for (let i = 0; i < config.particleCount; i++) {
+                // 初始化给个随机位置避免聚集
                 positions[i * 3] = (Math.random() - 0.5) * 100;
                 positions[i * 3 + 1] = (Math.random() - 0.5) * 100;
                 positions[i * 3 + 2] = (Math.random() - 0.5) * 100;
@@ -256,7 +260,7 @@
                 blending: THREE.AdditiveBlending,
                 depthWrite: false,
                 transparent: true,
-                opacity: 0.8,
+                opacity: 0.9,
                 map: getSprite()
             });
 
@@ -266,13 +270,14 @@
             calculateShape(config.shape);
         }
 
+        // 制作中心实边缘柔和的圆形贴图
         function getSprite() {
             const canvas = document.createElement('canvas');
             canvas.width = 64; canvas.height = 64;
             const ctx = canvas.getContext('2d');
             const grad = ctx.createRadialGradient(32,32,0,32,32,32);
             grad.addColorStop(0, 'rgba(255,255,255,1)');
-            grad.addColorStop(0.3, 'rgba(255,255,255,0.4)');
+            grad.addColorStop(0.4, 'rgba(255,255,255,0.3)');
             grad.addColorStop(1, 'rgba(0,0,0,0)');
             ctx.fillStyle = grad;
             ctx.fillRect(0,0,64,64);
@@ -285,167 +290,162 @@
         function calculateShape(type) {
             config.shape = type;
             const count = config.particleCount;
+            const colors = particleGeo.attributes.color.array;
 
-            // 样式与颜色切换
-            if (type === 'zen') {
-                updateColor('#ffffff'); // Zen模式：纯白
-                titleEl.style.backgroundImage = 'linear-gradient(180deg, #fff, #999)';
+            // UI 状态切换
+            if (type === 'origin') {
+                titleEl.style.backgroundImage = 'linear-gradient(180deg, #fff, #ffae00, #b8860b)';
                 config.breathRate = 0.5;
-            } else if (type === 'origin') {
-                updateColor('#ffcc00'); // Origin模式：金橙
-                titleEl.style.backgroundImage = 'linear-gradient(180deg, #fff, #ffae00, #cc6600)';
-                config.breathRate = 0.4; // 更慢的熔融感
+            } else if (type === 'zen') {
+                titleEl.style.backgroundImage = 'linear-gradient(180deg, #fff, #aaa)';
+                config.breathRate = 0.5;
             } else {
-                updateColor('#4ca1ff'); // 其他模式：蓝
                 titleEl.style.backgroundImage = 'linear-gradient(180deg, #fff, #4ca1ff)';
             }
 
-            for (let i = 0; i < count; i++) {
-                let x = 0, y = 0, z = 0;
-                const idx = i * 3;
-                types[i] = 0; // 重置
+            let idx = 0;
 
-                switch (type) {
-                    // ==========================================
-                    // 1. ZEN (复刻：液态球体 + 四波峰涟漪)
-                    // ==========================================
-                    case 'zen':
-                        if (i < count * 0.5) {
-                            // Core: 液态球体
-                            types[i] = 0; 
-                            const r = 13 * Math.cbrt(Math.random()); 
-                            const theta = Math.acos(2 * Math.random() - 1);
-                            const phi = Math.random() * Math.PI * 2;
-                            // 稍微压扁一点点Y轴，增加静谧感
-                            x = r * Math.sin(theta) * Math.cos(phi);
-                            y = r * Math.sin(theta) * Math.sin(phi) * 0.95;
-                            z = r * Math.cos(theta);
-                        } else {
-                            // Ripples: 四波峰引力场线
-                            types[i] = 1;
-                            const rBase = 18 + Math.random() * 45; 
-                            const angle = Math.random() * Math.PI * 2;
-                            
-                            // 存储原始位置用于波形计算
-                            initialPositions[idx] = rBase * Math.cos(angle);
-                            initialPositions[idx+1] = 0; // Y轴在动画里算
-                            initialPositions[idx+2] = rBase * Math.sin(angle);
-                            
-                            x = initialPositions[idx];
-                            y = 0;
-                            z = initialPositions[idx+2];
-                        }
-                        break;
-
-                    // ==========================================
-                    // 2. ORIGIN (新版：熔融金液 + 星河轨道)
-                    // ==========================================
-                    case 'origin':
-                        // 60% 核心流体, 40% 星河轨道
-                        if (i < count * 0.6) {
-                            // Core: 熔融的垂坠球体
-                            types[i] = 0;
-                            // 使用高斯分布聚集在中心，但向下拉伸
-                            const theta = Math.acos(2 * Math.random() - 1);
-                            const phi = Math.random() * Math.PI * 2;
-                            const rRaw = 12 * Math.cbrt(Math.random());
-                            
-                            x = rRaw * Math.sin(theta) * Math.cos(phi);
-                            z = rRaw * Math.sin(theta) * Math.sin(phi);
-                            let yRaw = rRaw * Math.cos(theta);
-
-                            // 关键造型：底部熔融下坠
-                            // 如果粒子在下半球 (y < 0)，给予指数级的拉伸
-                            if (yRaw < 0) {
-                                // 越靠近底部极点，拉伸越长
-                                const dropFactor = 1 + Math.abs(yRaw) * 0.15; 
-                                yRaw *= dropFactor; 
-                            }
-                            y = yRaw;
-                            
-                            // 颜色处理：中心白亮，边缘金红
-                            if(type === 'origin') {
-                                const dist = Math.sqrt(x*x + y*y + z*z) / 20;
-                                const colors = particleGeo.attributes.color.array;
-                                colors[idx] = 1.0; 
-                                colors[idx+1] = 0.9 - dist * 0.6; // 渐变到橙色
-                                colors[idx+2] = 0.6 - dist * 0.6; // 渐变到红色
-                            }
-
-                        } else {
-                            // Orbits: 3D 星河轨道
-                            types[i] = 1;
-                            // 随机分配到 3-4 个主要的轨道面上
-                            const orbitIndex = i % 4; 
-                            const angle = (i / (count * 0.4)) * Math.PI * 2 * 10; // 连贯性
-                            const radius = 25 + Math.random() * 30;
-                            
-                            // 定义轨道的倾斜 (Tilt)
-                            let tiltX = 0, tiltZ = 0;
-                            if (orbitIndex === 0) { tiltX = 0.2; tiltZ = 0.1; }
-                            else if (orbitIndex === 1) { tiltX = -0.3; tiltZ = 0.4; }
-                            else if (orbitIndex === 2) { tiltX = 0.5; tiltZ = -0.2; }
-                            else { tiltX = 0; tiltZ = 0; } // 水平大环
-
-                            // 预计算旋转后的圆环坐标
-                            // 原始圆环在 X-Z 平面
-                            let ox = radius * Math.cos(angle);
-                            let oy = (Math.random()-0.5) * 1.5; // 轨道厚度
-                            let oz = radius * Math.sin(angle);
-
-                            // 应用旋转矩阵 (简化版)
-                            let y1 = oy * Math.cos(tiltX) - oz * Math.sin(tiltX);
-                            let z1 = oy * Math.sin(tiltX) + oz * Math.cos(tiltX);
-                            let x1 = ox * Math.cos(tiltZ) - y1 * Math.sin(tiltZ);
-                            let y2 = ox * Math.sin(tiltZ) + y1 * Math.cos(tiltZ);
-
-                            x = x1; y = y2; z = z1;
-
-                            // 存储轨道参数以便在 animate 中旋转
-                            orbitParams[idx] = radius;     // 半径
-                            orbitParams[idx+1] = angle;    // 初始角度
-                            orbitParams[idx+2] = tiltX;    // 存储倾角信息等(简化处理，animate里重新算旋转更平滑)
-                            
-                            // 备份初始位置，用于旋转参考
-                            initialPositions[idx] = x;
-                            initialPositions[idx+1] = y;
-                            initialPositions[idx+2] = z;
-
-                            // 轨道颜色：微弱的冷光或暗金
-                            if(type === 'origin') {
-                                const colors = particleGeo.attributes.color.array;
-                                colors[idx] = 0.8; colors[idx+1] = 0.7; colors[idx+2] = 0.5;
-                            }
-                        }
-                        break;
-
-                    case 'galaxy': 
-                        const spiral = i * 0.05; const rG = i * 0.01;
-                        x = rG * Math.cos(spiral) * 20; z = rG * Math.sin(spiral) * 20; y = (Math.random()-0.5)*5;
-                        break;
+            // ==========================================
+            // ORIGIN: 液态金球 + 坐标网格
+            // ==========================================
+            if (type === 'origin') {
+                const coreCount = Math.floor(count * 0.55); // 55% Core, 45% BG
+                
+                // --- 1. Core: Fibonacci Sphere (完美几何球体起始) ---
+                const goldenRatio = (1 + Math.sqrt(5)) / 2;
+                
+                for (let i = 0; i < coreCount; i++) {
+                    types[i] = 0; // Core
                     
-                    case 'sphere':
-                        const rS = 30 * Math.cbrt(Math.random());
-                        const phiS = Math.acos(2 * Math.random() - 1);
-                        const thetaS = Math.random() * Math.PI * 2;
-                        x = rS * Math.sin(phiS) * Math.cos(thetaS);
-                        y = rS * Math.sin(phiS) * Math.sin(thetaS);
-                        z = rS * Math.cos(phiS);
-                        break;
-
-                    default: // mobius
-                        const u = (i/count) * Math.PI * 4; 
-                        const w = 8 + (Math.random()-0.5)*2; const rad = 25;
-                        x = (rad + w * Math.cos(u/2)) * Math.cos(u);
-                        y = (rad + w * Math.cos(u/2)) * Math.sin(u);
-                        z = w * Math.sin(u/2);
+                    // Fibonacci Spiral Distribution for uniform sphere
+                    const theta = 2 * Math.PI * i / goldenRatio;
+                    const phi = Math.acos(1 - 2 * (i + 0.5) / coreCount);
+                    
+                    const r = 12; // 核心半径
+                    
+                    const x = r * Math.sin(phi) * Math.cos(theta);
+                    const y = r * Math.sin(phi) * Math.sin(theta);
+                    const z = r * Math.cos(phi);
+                    
+                    targets[idx] = x;
+                    targets[idx+1] = y;
+                    targets[idx+2] = z;
+                    
+                    // 保存原始的单位法向量，用于液态膨胀计算
+                    initialPositions[idx] = Math.sin(phi) * Math.cos(theta); // nx
+                    initialPositions[idx+1] = Math.sin(phi) * Math.sin(theta); // ny
+                    initialPositions[idx+2] = Math.cos(phi); // nz
+                    
+                    // 初始颜色：纯金底色
+                    colors[idx] = 1.0; colors[idx+1] = 0.8; colors[idx+2] = 0.0;
+                    
+                    idx += 3;
                 }
 
-                targets[idx] = x;
-                targets[idx+1] = y;
-                targets[idx+2] = z;
+                // --- 2. Background: Coordinate Grid (天球坐标网格) ---
+                const bgCount = count - coreCount;
+                const latLines = 24; // 纬线数量
+                const lonLines = 36; // 经线数量
+                
+                // 将剩余粒子分配给网格
+                // 我们需要手动构建网格线，而不是随机散布
+                for (let i = coreCount; i < count; i++) {
+                    types[i] = 1; // Grid
+                    
+                    // 简单的分布逻辑：一部分做经线，一部分做纬线
+                    const relativeI = i - coreCount;
+                    const isLat = relativeI % 2 === 0; // 交替分配
+                    
+                    let u, v, radius = 35 + Math.random() * 2; // 背景球体半径
+                    
+                    if (isLat) {
+                        // 纬线圈
+                        const lineIdx = Math.floor((relativeI / 2) / (bgCount / 2 / latLines));
+                        v = (lineIdx / latLines) * Math.PI; // 0 to PI
+                        u = (relativeI % 100) / 100 * Math.PI * 2; // 绕圈
+                    } else {
+                        // 经线圈
+                        const lineIdx = Math.floor((relativeI / 2) / (bgCount / 2 / lonLines));
+                        u = (lineIdx / lonLines) * Math.PI * 2;
+                        v = (relativeI % 100) / 100 * Math.PI;
+                    }
+                    
+                    const x = radius * Math.sin(v) * Math.cos(u);
+                    const y = radius * Math.sin(v) * Math.sin(u);
+                    const z = radius * Math.cos(v);
+
+                    targets[idx] = x;
+                    targets[idx+1] = y;
+                    targets[idx+2] = z;
+
+                    // 存储 u, v 用于星河扭曲计算
+                    uvData[(i) * 2] = u;
+                    uvData[(i) * 2 + 1] = v;
+                    
+                    // 存储初始位置
+                    initialPositions[idx] = x;
+                    initialPositions[idx+1] = y;
+                    initialPositions[idx+2] = z;
+                    
+                    // 初始颜色：极简几何白/蓝灰
+                    colors[idx] = 0.3; colors[idx+1] = 0.4; colors[idx+2] = 0.5;
+
+                    idx += 3;
+                }
+            } 
+            // ==========================================
+            // ZEN: 复刻黑白液态 + 涟漪
+            // ==========================================
+            else if (type === 'zen') {
+                for (let i = 0; i < count; i++) {
+                    const idx = i * 3;
+                    if (i < count * 0.5) {
+                        types[i] = 0; // Core
+                        const r = 13 * Math.cbrt(Math.random()); 
+                        const theta = Math.acos(2 * Math.random() - 1);
+                        const phi = Math.random() * Math.PI * 2;
+                        targets[idx] = r * Math.sin(theta) * Math.cos(phi);
+                        targets[idx+1] = r * Math.sin(theta) * Math.sin(phi);
+                        targets[idx+2] = r * Math.cos(theta);
+                        // 颜色：纯白
+                        colors[idx] = 1.0; colors[idx+1] = 1.0; colors[idx+2] = 1.0;
+                    } else {
+                        types[i] = 1; // Ripples
+                        const rBase = 18 + Math.random() * 45; 
+                        const angle = Math.random() * Math.PI * 2;
+                        initialPositions[idx] = rBase * Math.cos(angle);
+                        initialPositions[idx+1] = 0; 
+                        initialPositions[idx+2] = rBase * Math.sin(angle);
+                        targets[idx] = initialPositions[idx];
+                        targets[idx+1] = 0;
+                        targets[idx+2] = initialPositions[idx+2];
+                        // 颜色：白灰
+                        colors[idx] = 0.6; colors[idx+1] = 0.6; colors[idx+2] = 0.6;
+                    }
+                }
             }
-            
+            // ==========================================
+            // 其他形状 (保持简单)
+            // ==========================================
+            else {
+                for (let i = 0; i < count; i++) {
+                    const idx = i * 3;
+                    types[i] = 0;
+                    let x,y,z;
+                    if(type==='galaxy') {
+                        const spiral = i * 0.05; const r = i * 0.01;
+                        x = r * Math.cos(spiral) * 20; z = r * Math.sin(spiral) * 20; y = (Math.random()-0.5)*5;
+                        colors[idx] = 0.2; colors[idx+1] = 0.5; colors[idx+2] = 1.0;
+                    } else {
+                        const r = 30 * Math.cbrt(Math.random());
+                        const theta = Math.random() * Math.PI * 2;
+                        const phi = Math.acos(2 * Math.random() - 1);
+                        x = r*Math.sin(phi)*Math.cos(theta); y=r*Math.sin(phi)*Math.sin(theta); z=r*Math.cos(phi);
+                        colors[idx] = 0.2; colors[idx+1] = 0.8; colors[idx+2] = 0.5;
+                    }
+                    targets[idx]=x; targets[idx+1]=y; targets[idx+2]=z;
+                }
+            }
             particleGeo.attributes.color.needsUpdate = true;
         }
 
@@ -456,106 +456,158 @@
             let beat = 0; 
             if (isPlaying && audioAnalyser) {
                 audioAnalyser.getByteFrequencyData(dataArray);
+                // 提取低音用于液态脉动
                 const bassAvg = (dataArray[2] + dataArray[5] + dataArray[8]) / 3;
                 beat = bassAvg / 255; 
             }
 
             const time = clock.getElapsedTime();
             const positionsArray = particleGeo.attributes.position.array;
+            const colorsArray = particleGeo.attributes.color.array;
             
-            // 呼吸变量 (通用)
+            // 基础呼吸变量
             const breath = Math.sin(time * config.breathRate) * 0.05 + 1; 
 
-            // 根据模式执行不同的物理逻辑
             if (config.shape === 'origin') {
-                // === ORIGIN 物理逻辑 (熔融 + 星轨) ===
+                // ==========================================
+                // ORIGIN 物理模拟
+                // ==========================================
                 
+                // 相机位置 (用于Rim Light计算)
+                const camPos = camera.position;
+
                 for (let i = 0; i < config.particleCount; i++) {
                     const idx = i * 3;
                     
                     if (types[i] === 0) { 
-                        // [Core] 熔融金液
-                        // 逻辑：球体表面蠕动 + 向下流淌趋势
+                        // --- Core: Molten Gold Sphere (熔融金球) ---
+                        
+                        // 1. 获取基础球体位置 (targets) 和 法向量 (initialPositions)
+                        // 注意：这里 targets 是标准的 r=12 球体
+                        const nx = initialPositions[idx];
+                        const ny = initialPositions[idx+1];
+                        const nz = initialPositions[idx+2];
                         const tx = targets[idx];
                         const ty = targets[idx+1];
                         const tz = targets[idx+2];
+
+                        // 2. 液态玻璃膨胀算法 (Procedural Liquid)
+                        // 使用叠加的正弦波模拟 3D Noise，低频高幅
+                        // 这样球体不会破碎，而是会整体变形
+                        const noiseFreq = 0.15;
+                        const noiseAmp = 3.0; // 变形幅度大
+                        const liquidTime = time * 0.6;
                         
-                        // Noise 蠕动 (模拟液体表面张力)
-                        const noise = Math.sin(tx * 0.15 + time) * Math.cos(ty * 0.15 + time * 0.8) * 0.6;
-                        
-                        // 音乐律动：核心轻微膨胀
+                        // 复杂的波形叠加
+                        const displacement = (
+                            Math.sin(nx * 4 + liquidTime) * Math.cos(ny * 4 + liquidTime) +
+                            Math.sin(ny * 3 - liquidTime) * 0.5
+                        ) * noiseAmp;
+
+                        // 音乐律动：增加表面张力的震颤
                         const pulse = beat * 1.5;
+                        
+                        // 目标位置：沿法线方向挤出/凹陷
+                        const targetX = tx + nx * (displacement + pulse);
+                        const targetY = ty + ny * (displacement + pulse);
+                        const targetZ = tz + nz * (displacement + pulse);
 
-                        // 粘滞流淌模拟：
-                        // 并不是真的改 target y，而是让当前 y 有一个基于时间的微小偏移，模拟缓慢下坠感，然后循环
-                        // 这里用简单的 sine 模拟上下浮动，但下半部分幅度大
-                        let meltOffset = 0;
-                        if (ty < 0) {
-                            meltOffset = Math.sin(time * 0.5 + tx) * (Math.abs(ty) * 0.05);
-                        }
+                        // 3. 颜色计算：边缘光 (Rim Light)
+                        // 计算 View Vector (粒子到相机)
+                        // 简单近似：因为球心在(0,0,0)，法线就是 nx,ny,nz
+                        // 真实的 Rim Light 是 ViewDir dot Normal
+                        // 粒子位置 (简化为 nx, ny, nz) dot (0,0,1 假设相机在Z轴) -> 动态算比较贵
+                        // 既然是 Points，我们用一种 Hack：
+                        // 如果 displacement > 0 (凸起部分)，更亮；如果 displacement < 0 (凹陷)，更暗红
+                        
+                        // 模拟高温液金：
+                        // 凸起 = 亮金/白
+                        // 凹陷 = 深红/橙
+                        
+                        const heat = displacement / noiseAmp; // -1 to 1
+                        
+                        // Base Gold: 1.0, 0.8, 0.0
+                        // Highlight: 1.0, 1.0, 0.8
+                        // Shadow/Rim: 1.0, 0.3, 0.0
+                        
+                        let r = 1.0;
+                        let g = 0.8 + heat * 0.2; // 0.6 ~ 1.0
+                        let b = 0.0 + heat * 0.4; // 0.0 ~ 0.4
+                        
+                        // 强光修正
+                        if(heat > 0.5) { g+=0.2; b+=0.5; } // 高光白
 
-                        positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], tx * breath + noise + tx*pulse*0.05, 0.05);
-                        positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], ty * breath + noise + meltOffset + ty*pulse*0.05, 0.05);
-                        positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], tz * breath + noise + tz*pulse*0.05, 0.05);
+                        colorsArray[idx] = r;
+                        colorsArray[idx+1] = g;
+                        colorsArray[idx+2] = b;
+
+                        // Lerp Position
+                        positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], targetX, 0.1);
+                        positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], targetY, 0.1);
+                        positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], targetZ, 0.1);
 
                     } else {
-                        // [Orbits] 3D 星河轨道旋转
-                        // 让整个轨道围绕Y轴缓慢旋转
-                        // 读取初始位置
-                        const ox = initialPositions[idx];
-                        const oy = initialPositions[idx+1];
-                        const oz = initialPositions[idx+2];
-
-                        // 旋转速度：外圈慢，内圈快 (开普勒?) -> 这里简化为统一慢速
-                        const rotSpeed = time * 0.1;
+                        // --- Background: Coordinate -> Cosmic Web ---
                         
-                        // 绕Y轴旋转公式
-                        const rx = ox * Math.cos(rotSpeed) - oz * Math.sin(rotSpeed);
-                        const rz = ox * Math.sin(rotSpeed) + oz * Math.cos(rotSpeed);
-                        // Y轴保持倾角不变 (因为是绕Y旋转，Y坐标不变)
-                        const ry = oy;
-
-                        positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], rx, 0.1);
-                        positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], ry, 0.1);
-                        positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], rz, 0.1);
-                    }
-                }
-                // 整体缓慢自旋
-                particles.rotation.y = time * 0.02; 
-
-            } else if (config.shape === 'zen') {
-                // === ZEN 物理逻辑 (液态 + 涟漪) ===
-                // 复刻上一版的逻辑
-                
-                const rippleSpeed = time * 0.8;
-                // 相机推拉模拟
-                // const camDist = 60 + Math.sin(time * 0.1) * 10; 
-                
-                for (let i = 0; i < config.particleCount; i++) {
-                    const idx = i * 3;
-                    
-                    if (types[i] === 0) {
-                        // Core Logic
+                        // 1. 读取基础坐标网格位置
                         const tx = targets[idx];
                         const ty = targets[idx+1];
                         const tz = targets[idx+2];
+                        
+                        // 2. 星河卷曲算法 (Curl Noise Simulation)
+                        // 随着时间推移，完美的网格线开始扭曲
+                        // 使用 UV 数据来驱动扭曲，保证线条的连续性
+                        const u = uvData[i*2];
+                        const v = uvData[i*2+1];
+                        
+                        // 扭曲因子：随时间增加
+                        const twist = Math.sin(time * 0.2) * 5.0 + 5.0; // 缓慢大幅度摆动
+                        
+                        // 在球面上叠加螺旋波
+                        const wave = Math.sin(u * 5 + time * 0.2) * Math.cos(v * 5) * twist;
+                        
+                        const finalX = tx + wave;
+                        const finalY = ty + Math.sin(u * 3 + time * 0.3) * twist * 0.5; // Y轴也轻微起伏
+                        const finalZ = tz + Math.cos(u * 5 + time * 0.2) * twist;
+
+                        // 颜色演变：网格(蓝白) -> 星河(金尘)
+                        // 这里的 twist 越大，说明越接近星河态，颜色越偏金
+                        const galaxyFactor = (Math.sin(time * 0.2) + 1) * 0.5; // 0~1
+                        
+                        // Grid Color (Blueish): 0.2, 0.4, 0.6
+                        // Gold Dust (Yellowish): 0.8, 0.6, 0.2
+                        colorsArray[idx] = THREE.MathUtils.lerp(0.2, 0.8, galaxyFactor);
+                        colorsArray[idx+1] = THREE.MathUtils.lerp(0.4, 0.6, galaxyFactor);
+                        colorsArray[idx+2] = THREE.MathUtils.lerp(0.6, 0.2, galaxyFactor);
+
+                        positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], finalX, 0.05);
+                        positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], finalY, 0.05);
+                        positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], finalZ, 0.05);
+                    }
+                }
+                // 整体极慢自旋
+                particles.rotation.y = time * 0.05;
+
+            } else if (config.shape === 'zen') {
+                // ==========================================
+                // ZEN 物理模拟 (保持原样)
+                // ==========================================
+                const rippleSpeed = time * 0.8;
+                for (let i = 0; i < config.particleCount; i++) {
+                    const idx = i * 3;
+                    if (types[i] === 0) {
+                        const tx = targets[idx]; const ty = targets[idx+1]; const tz = targets[idx+2];
                         const noise = Math.sin(tx * 0.1 + time) * Math.cos(ty * 0.1 + time) * 0.5;
                         const audioBump = beat * 1.5;
-
                         positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], tx * breath + tx * audioBump * 0.1 + noise, 0.05);
                         positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], ty * breath + ty * audioBump * 0.1 + noise, 0.05);
                         positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], tz * breath + tz * audioBump * 0.1 + noise, 0.05);
                     } else {
-                        // Ripples Logic (四波峰)
-                        const ox = initialPositions[idx];
-                        const oz = initialPositions[idx+2];
+                        const ox = initialPositions[idx]; const oz = initialPositions[idx+2];
                         const dist = Math.sqrt(ox*ox + oz*oz);
                         const angle = Math.atan2(oz, ox);
-
-                        // Sin(4*theta) 波形
                         const wave = Math.sin(angle * 4 + dist * 0.2 - rippleSpeed) * Math.cos(dist * 0.1);
                         const amplitude = 2.0 * (1 + beat * 2);
-
                         positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], ox, 0.05);
                         positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], wave * amplitude, 0.1);
                         positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], oz, 0.05);
@@ -564,7 +616,7 @@
                 particles.rotation.y = time * 0.05;
 
             } else {
-                // === 通用逻辑 ===
+                // 通用简单模式
                 const moveSpeed = 0.05;
                 for (let i = 0; i < config.particleCount; i++) {
                     const idx = i * 3;
@@ -572,25 +624,17 @@
                     positionsArray[idx+1] += (targets[idx+1] - positionsArray[idx+1]) * moveSpeed;
                     positionsArray[idx+2] += (targets[idx+2] - positionsArray[idx+2]) * moveSpeed;
                 }
-                particles.rotation.y += config.rotationSpeed;
+                particles.rotation.y += config.autoRotateSpeed || 0.001;
             }
 
             particleGeo.attributes.position.needsUpdate = true;
+            particleGeo.attributes.color.needsUpdate = true;
             controls.update();
             composer.render();
         }
 
         function updateColor(hex) {
-            config.themeColor = hex;
-            const c = new THREE.Color(hex);
-            const colors = particleGeo.attributes.color.array;
-            // 基础刷新，特定模式会在 calculateShape 里做更细致的渐变覆盖
-            if(config.shape !== 'origin') { 
-                for(let i=0; i<config.particleCount; i++) {
-                    colors[i*3] = c.r; colors[i*3+1] = c.g; colors[i*3+2] = c.b;
-                }
-                particleGeo.attributes.color.needsUpdate = true;
-            }
+            // Origin模式下颜色是动态计算的，不需要全刷
         }
 
         // --- 交互部分 ---
@@ -606,10 +650,6 @@
             const file = e.target.files[0];
             if (!file) return;
             songTitleEl.innerText = file.name.replace(/\.[^/.]+$/, "");
-            
-            // 自动判断：如果是Zen模式保持Zen，否则保持Origin
-            // 这里不做强制切换，让用户自己切
-            
             const reader = new FileReader();
             reader.onload = function(ev) {
                 if(audioContext) audioContext.close();
@@ -670,14 +710,14 @@
         }
 
         function initGUI(bloomPass) {
-            gui = new GUI({ title: 'Energy State' });
+            gui = new GUI({ title: 'Soul System' });
             
-            gui.add(config, 'shape', ['origin', 'zen', 'galaxy', 'sphere', 'mobius'])
-                .name('Form Type')
+            gui.add(config, 'shape', ['origin', 'zen', 'galaxy', 'sphere'])
+                .name('Theme')
                 .onChange(val => calculateShape(val));
                 
-            gui.add(config, 'bloomStrength', 0, 3).name('Glow Intensity').onChange(v => bloomPass.strength = v);
-            gui.add(config, 'flowSpeed', 0, 1).name('Time Dilation');
+            gui.add(config, 'bloomStrength', 0, 3).name('Glow').onChange(v => bloomPass.strength = v);
+            gui.add(config, 'breathRate', 0, 2).name('Breath');
             
             if(window.innerWidth < 600) gui.close();
         }
