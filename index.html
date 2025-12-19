@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Soul - Origin: Liquid Gold</title>
+    <title>DAVID MUSIC - Visualizer</title>
     <style>
-        /* --- 沉浸式深空背景 --- */
+        /* --- 全局样式 --- */
         body, html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #000000;
+            background-color: #050505;
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             user-select: none;
         }
 
-        /* 顶部 LOGO - 动态渐变 */
+        /* 顶部 LOGO: DAVID MUSIC */
         #header-title {
             position: absolute;
             top: 25px;
@@ -29,115 +29,184 @@
             letter-spacing: 12px;
             z-index: 10;
             pointer-events: none;
-            /* 默认金色 */
-            background-image: linear-gradient(180deg, #ffffff 0%, #ffcc00 40%, #b8860b 100%);
+            /* 渐变色将在JS中动态更新 */
+            background-image: linear-gradient(45deg, #ffffff, #a1c4fd);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            text-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
-            transition: opacity 1s;
+            text-shadow: 0 0 30px rgba(255,255,255,0.2);
+            transition: opacity 0.5s;
         }
 
-        /* UI 容器 */
+        /* 左侧播放器 UI */
         #player-controls {
             position: absolute;
             top: 30px;
             left: 30px;
             z-index: 20;
-            color: #dcdcdc;
-            background: rgba(8, 8, 8, 0.85);
+            color: #eee;
+            background: rgba(20, 20, 20, 0.7);
             backdrop-filter: blur(15px);
             padding: 20px;
             border-radius: 12px;
-            border: 1px solid rgba(255, 215, 0, 0.15); /* 金色微边框 */
-            width: 260px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 280px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            transition: transform 0.3s;
         }
         
-        .control-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+        .control-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
 
         button {
-            background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+            background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.2);
-            color: #ccc;
+            color: white;
             padding: 8px 16px;
             border-radius: 20px;
             cursor: pointer;
             font-size: 0.85rem;
-            transition: all 0.4s ease;
+            transition: all 0.2s;
         }
-        button:hover { 
-            background: rgba(255, 215, 0, 0.1); 
-            border-color: #ffcc00; 
-            color: #ffcc00; 
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+        button:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: white;
+            transform: scale(1.05);
         }
 
         input[type="range"] {
-            -webkit-appearance: none; width: 100%; height: 2px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 2px; outline: none; margin: 10px 0;
+            -webkit-appearance: none;
+            width: 100%;
+            height: 3px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            outline: none;
+            margin: 10px 0;
         }
         input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none; width: 10px; height: 10px; border-radius: 50%;
-            background: #ffcc00; cursor: pointer; box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
         }
         
         .song-info {
-            font-size: 0.9rem; font-weight: 300; letter-spacing: 1px;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            margin-bottom: 15px; color: #ffcc00;
+            font-size: 1rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+        .artist-name {
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 15px;
         }
 
-        .label { font-size: 0.7rem; color: #888; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between; }
+        /* 隐藏的文件上传 */
         #file-input { display: none; }
-        
+
+        /* 左下角时间 */
         #clock {
-            position: absolute; bottom: 30px; left: 30px;
-            color: rgba(255, 255, 255, 0.2);
-            font-family: 'Helvetica Neue', sans-serif; font-weight: 100;
-            font-size: 0.9rem; letter-spacing: 2px; z-index: 10;
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            color: rgba(255, 255, 255, 0.5);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1rem;
+            z-index: 10;
         }
 
+        /* 全屏按钮 */
         #fullscreen-btn {
-            position: absolute; bottom: 30px; right: 30px; z-index: 20;
-            background: transparent; border: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.4);
-            width: 40px; height: 40px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem; cursor: pointer; transition: all 0.3s;
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            z-index: 20;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: background 0.3s;
         }
-        #fullscreen-btn:hover { border-color: #ffcc00; color: #ffcc00; }
+        #fullscreen-btn:hover { background: rgba(255,255,255,0.3); }
 
-        .lil-gui.root { position: absolute; top: 20px; right: 20px; z-index: 100; }
-        
+        /* GUI 面板位置修正 */
+        .lil-gui.root {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            --background-color: rgba(10, 10, 10, 0.8);
+            --text-color: #eee;
+            --title-background-color: #272822;
+            --widget-color: #444;
+            --hover-color: #555;
+            --focus-color: #666;
+            --number-color: #2cc9ff;
+            --string-color: #a2dbff;
+            font-family: 'Helvetica', sans-serif;
+        }
+
         #loading {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            color: #b8860b; font-size: 0.9rem; letter-spacing: 4px; text-transform: uppercase;
-            pointer-events: none; transition: opacity 0.8s;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: #888;
+            font-size: 1rem;
+            letter-spacing: 3px;
+            pointer-events: none;
+            transition: opacity 0.5s;
         }
     </style>
 </head>
 <body>
 
-    <div id="header-title">Soul</div>
-    <div id="loading">Forging Matter...</div>
+    <!-- 顶部标题 -->
+    <div id="header-title">DAVID MUSIC</div>
+    
+    <div id="loading">SYSTEM STARTUP...</div>
 
+    <!-- 左侧音乐控制面板 -->
     <div id="player-controls">
-        <div class="song-info" id="current-song">WAITING FOR SIGNAL</div>
+        <div class="song-info" id="current-song">No Audio Loaded</div>
+        <div class="artist-name">Interactive Visualizer</div>
+        
         <div class="control-row">
-            <button id="btn-upload">Load Audio</button>
+            <button id="btn-upload">Import Track</button>
             <button id="btn-play">Play</button>
         </div>
-        <div class="label"><span>Time</span> <span id="time-display">0:00</span></div>
+        
+        <div style="font-size: 0.7rem; color:#aaa; display:flex; justify-content:space-between;">
+            <span>Track Progress</span> <span id="time-display">0:00</span>
+        </div>
         <input type="range" id="progress-bar" value="0" min="0" max="100" step="0.1">
-        <div class="label">Volume</div>
+        
+        <div style="font-size: 0.7rem; color:#aaa; margin-top:5px;">Master Volume</div>
         <input type="range" id="vol-bar" value="0.7" min="0" max="1" step="0.01">
+
         <input type="file" id="file-input" accept="audio/*" multiple>
     </div>
 
+    <!-- 左下角时间 -->
     <div id="clock">00:00:00</div>
+
+    <!-- 全屏按钮 -->
     <button id="fullscreen-btn">⛶</button>
 
+    <!-- 引入 Three.js -->
     <script type="importmap">
         {
             "imports": {
@@ -155,26 +224,39 @@
         import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
         import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
-        // --- 核心配置 ---
+        // --- 全局配置 (State) ---
         const config = {
-            particleCount: 22000, 
-            particleSize: 0.22,
-            shape: 'origin',       // 默认: Origin (液态金球 + 坐标网格)
-            flowSpeed: 0.4,        // 有机慢速
-            bloomStrength: 1.6,    // 强光感
+            // 基础设置
+            particleCount: 20000,
+            shape: 'origin', // 默认 Origin 模式
+            
+            // 视觉元素 (可调节)
+            particleSize: 0.2,
+            particleOpacity: 0.9,
+            themeColor: '#ffcc00', // 默认金
+            useDynamicColor: true, // Origin模式下是否使用物理计算颜色
+            
+            // 运动参数 (可调节)
+            flowSpeed: 0.4,
+            rotationSpeed: 0.0005,
+            flowDirection: 1, // 1 or -1
+            
+            // 音乐响应 (可调节)
+            bassSensitivity: 1.5, // 低音影响大小
+            trebleSensitivity: 1.5, // 高音影响颜色/亮度
+            
+            // 后期特效
+            bloomStrength: 1.5,
             bloomRadius: 0.5,
-            bloomThreshold: 0.1,
-            breathRate: 0.8        // 呼吸频率
+            breathRate: 0.5
         };
 
+        // 变量声明
         let scene, camera, renderer, composer, controls;
         let particles, particleGeo;
         let positions, targets, initialPositions;
+        let types, uvData; // 用于 Origin 模式的数据
         
-        // 粒子元数据
-        let types; // 0=Core, 1=Background/Grid
-        let uvData; // 存储UV坐标或角度，用于网格计算
-
         let clock = new THREE.Clock();
         let audioContext, audioAnalyser, audioSource, audioBuffer;
         let isPlaying = false;
@@ -182,73 +264,93 @@
         let audioDuration = 0;
         let gui;
 
-        const songTitleEl = document.getElementById('current-song');
-        const progressBar = document.getElementById('progress-bar');
-        const timeDisplay = document.getElementById('time-display');
-        const playBtn = document.getElementById('btn-play');
+        // DOM 元素
         const titleEl = document.getElementById('header-title');
+        const songTitleEl = document.getElementById('current-song');
+        const timeDisplay = document.getElementById('time-display');
+        const progressBar = document.getElementById('progress-bar');
+        const playBtn = document.getElementById('btn-play');
+        const uploadBtn = document.getElementById('btn-upload');
+        const fileInput = document.getElementById('file-input');
+        const volBar = document.getElementById('vol-bar');
 
+        // --- 初始化 ---
         function init() {
+            // 场景
             scene = new THREE.Scene();
             scene.fog = new THREE.FogExp2(0x000000, 0.002);
 
+            // 相机
             camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 2000);
-            camera.position.set(0, 5, 70);
+            camera.position.set(0, 5, 80);
 
+            // 渲染器
             renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance" });
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.toneMapping = THREE.ReinhardToneMapping;
             document.body.appendChild(renderer.domElement);
 
+            // 控制器
             controls = new OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.03;
             controls.autoRotate = true;
-            controls.autoRotateSpeed = 0.3;
-            controls.enableZoom = true;
+            controls.autoRotateSpeed = 0.5;
 
+            // 后期处理
             const renderScene = new RenderPass(scene, camera);
             const bloomPass = new UnrealBloomPass(
                 new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2), 
-                config.bloomStrength, config.bloomRadius, config.bloomThreshold
+                config.bloomStrength, config.bloomRadius, 0.05
             );
             
             composer = new EffectComposer(renderer);
             composer.addPass(renderScene);
             composer.addPass(bloomPass);
 
+            // 创建粒子
             createParticles();
+
+            // GUI 面板
             initGUI(bloomPass);
-            
+
+            // 事件
             window.addEventListener('resize', onWindowResize);
+            document.addEventListener('mousemove', onMouseMove);
+            
+            // 开始
             document.getElementById('loading').style.opacity = 0;
             animate();
             setInterval(updateClock, 1000);
         }
 
+        // --- 粒子系统 ---
         function createParticles() {
+            if(particles) {
+                scene.remove(particles);
+                particleGeo.dispose();
+            }
+
             particleGeo = new THREE.BufferGeometry();
-            
             positions = new Float32Array(config.particleCount * 3);
             targets = new Float32Array(config.particleCount * 3);
             initialPositions = new Float32Array(config.particleCount * 3);
             const colors = new Float32Array(config.particleCount * 3);
             
             types = new Int8Array(config.particleCount);
-            uvData = new Float32Array(config.particleCount * 2); // 存储 [u, v]
+            uvData = new Float32Array(config.particleCount * 2);
 
-            const colorObj = new THREE.Color('#ffffff');
+            const c = new THREE.Color(config.themeColor);
 
             for (let i = 0; i < config.particleCount; i++) {
-                // 初始化给个随机位置避免聚集
                 positions[i * 3] = (Math.random() - 0.5) * 100;
                 positions[i * 3 + 1] = (Math.random() - 0.5) * 100;
                 positions[i * 3 + 2] = (Math.random() - 0.5) * 100;
 
-                colors[i * 3] = colorObj.r;
-                colors[i * 3 + 1] = colorObj.g;
-                colors[i * 3 + 2] = colorObj.b;
+                colors[i * 3] = c.r;
+                colors[i * 3 + 1] = c.g;
+                colors[i * 3 + 2] = c.b;
             }
 
             particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
@@ -260,7 +362,7 @@
                 blending: THREE.AdditiveBlending,
                 depthWrite: false,
                 transparent: true,
-                opacity: 0.9,
+                opacity: config.particleOpacity,
                 map: getSprite()
             });
 
@@ -270,14 +372,13 @@
             calculateShape(config.shape);
         }
 
-        // 制作中心实边缘柔和的圆形贴图
         function getSprite() {
             const canvas = document.createElement('canvas');
             canvas.width = 64; canvas.height = 64;
             const ctx = canvas.getContext('2d');
             const grad = ctx.createRadialGradient(32,32,0,32,32,32);
             grad.addColorStop(0, 'rgba(255,255,255,1)');
-            grad.addColorStop(0.4, 'rgba(255,255,255,0.3)');
+            grad.addColorStop(0.3, 'rgba(255,255,255,0.4)');
             grad.addColorStop(1, 'rgba(0,0,0,0)');
             ctx.fillStyle = grad;
             ctx.fillRect(0,0,64,64);
@@ -286,346 +387,276 @@
             return tex;
         }
 
-        // --- 核心：形态生成算法 ---
+        // --- 形状计算逻辑 ---
         function calculateShape(type) {
             config.shape = type;
             const count = config.particleCount;
             const colors = particleGeo.attributes.color.array;
-
-            // UI 状态切换
-            if (type === 'origin') {
+            
+            // 自动配置颜色主题，但允许用户覆盖
+            if(type === 'origin') {
+                if(config.useDynamicColor) updateGUIColor('#ffcc00');
                 titleEl.style.backgroundImage = 'linear-gradient(180deg, #fff, #ffae00, #b8860b)';
-                config.breathRate = 0.5;
             } else if (type === 'zen') {
-                titleEl.style.backgroundImage = 'linear-gradient(180deg, #fff, #aaa)';
-                config.breathRate = 0.5;
-            } else {
-                titleEl.style.backgroundImage = 'linear-gradient(180deg, #fff, #4ca1ff)';
+                if(config.useDynamicColor) updateGUIColor('#ffffff');
+                titleEl.style.backgroundImage = 'linear-gradient(180deg, #fff, #999)';
             }
 
             let idx = 0;
 
-            // ==========================================
-            // ORIGIN: 液态金球 + 坐标网格
-            // ==========================================
             if (type === 'origin') {
-                const coreCount = Math.floor(count * 0.55); // 55% Core, 45% BG
-                
-                // --- 1. Core: Fibonacci Sphere (完美几何球体起始) ---
+                // Origin: 液态金球 + 宇宙网格
+                const coreCount = Math.floor(count * 0.55);
                 const goldenRatio = (1 + Math.sqrt(5)) / 2;
                 
+                // 1. Core
                 for (let i = 0; i < coreCount; i++) {
-                    types[i] = 0; // Core
-                    
-                    // Fibonacci Spiral Distribution for uniform sphere
+                    types[i] = 0;
                     const theta = 2 * Math.PI * i / goldenRatio;
                     const phi = Math.acos(1 - 2 * (i + 0.5) / coreCount);
+                    const r = 12;
                     
-                    const r = 12; // 核心半径
+                    targets[idx] = r * Math.sin(phi) * Math.cos(theta);
+                    targets[idx+1] = r * Math.sin(phi) * Math.sin(theta);
+                    targets[idx+2] = r * Math.cos(phi);
                     
-                    const x = r * Math.sin(phi) * Math.cos(theta);
-                    const y = r * Math.sin(phi) * Math.sin(theta);
-                    const z = r * Math.cos(phi);
-                    
-                    targets[idx] = x;
-                    targets[idx+1] = y;
-                    targets[idx+2] = z;
-                    
-                    // 保存原始的单位法向量，用于液态膨胀计算
-                    initialPositions[idx] = Math.sin(phi) * Math.cos(theta); // nx
-                    initialPositions[idx+1] = Math.sin(phi) * Math.sin(theta); // ny
-                    initialPositions[idx+2] = Math.cos(phi); // nz
-                    
-                    // 初始颜色：纯金底色
-                    colors[idx] = 1.0; colors[idx+1] = 0.8; colors[idx+2] = 0.0;
-                    
+                    // 存储法线向量
+                    initialPositions[idx] = Math.sin(phi) * Math.cos(theta);
+                    initialPositions[idx+1] = Math.sin(phi) * Math.sin(theta);
+                    initialPositions[idx+2] = Math.cos(phi);
                     idx += 3;
                 }
-
-                // --- 2. Background: Coordinate Grid (天球坐标网格) ---
-                const bgCount = count - coreCount;
-                const latLines = 24; // 纬线数量
-                const lonLines = 36; // 经线数量
                 
-                // 将剩余粒子分配给网格
-                // 我们需要手动构建网格线，而不是随机散布
+                // 2. Grid
+                const latLines = 24, lonLines = 36;
                 for (let i = coreCount; i < count; i++) {
-                    types[i] = 1; // Grid
-                    
-                    // 简单的分布逻辑：一部分做经线，一部分做纬线
+                    types[i] = 1;
                     const relativeI = i - coreCount;
-                    const isLat = relativeI % 2 === 0; // 交替分配
-                    
-                    let u, v, radius = 35 + Math.random() * 2; // 背景球体半径
+                    const isLat = relativeI % 2 === 0;
+                    let u, v, radius = 35 + Math.random()*2;
                     
                     if (isLat) {
-                        // 纬线圈
-                        const lineIdx = Math.floor((relativeI / 2) / (bgCount / 2 / latLines));
-                        v = (lineIdx / latLines) * Math.PI; // 0 to PI
-                        u = (relativeI % 100) / 100 * Math.PI * 2; // 绕圈
+                        const lineIdx = Math.floor((relativeI/2) / ((count-coreCount)/2/latLines));
+                        v = (lineIdx/latLines) * Math.PI;
+                        u = (relativeI % 100) / 100 * Math.PI * 2;
                     } else {
-                        // 经线圈
-                        const lineIdx = Math.floor((relativeI / 2) / (bgCount / 2 / lonLines));
-                        u = (lineIdx / lonLines) * Math.PI * 2;
+                        const lineIdx = Math.floor((relativeI/2) / ((count-coreCount)/2/lonLines));
+                        u = (lineIdx/lonLines) * Math.PI * 2;
                         v = (relativeI % 100) / 100 * Math.PI;
                     }
                     
-                    const x = radius * Math.sin(v) * Math.cos(u);
-                    const y = radius * Math.sin(v) * Math.sin(u);
-                    const z = radius * Math.cos(v);
-
-                    targets[idx] = x;
-                    targets[idx+1] = y;
-                    targets[idx+2] = z;
-
-                    // 存储 u, v 用于星河扭曲计算
-                    uvData[(i) * 2] = u;
-                    uvData[(i) * 2 + 1] = v;
+                    targets[idx] = radius * Math.sin(v) * Math.cos(u);
+                    targets[idx+1] = radius * Math.sin(v) * Math.sin(u);
+                    targets[idx+2] = radius * Math.cos(v);
                     
-                    // 存储初始位置
-                    initialPositions[idx] = x;
-                    initialPositions[idx+1] = y;
-                    initialPositions[idx+2] = z;
-                    
-                    // 初始颜色：极简几何白/蓝灰
-                    colors[idx] = 0.3; colors[idx+1] = 0.4; colors[idx+2] = 0.5;
-
+                    uvData[i*2] = u;
+                    uvData[i*2+1] = v;
                     idx += 3;
                 }
-            } 
-            // ==========================================
-            // ZEN: 复刻黑白液态 + 涟漪
-            // ==========================================
-            else if (type === 'zen') {
+
+            } else if (type === 'zen') {
+                // Zen: 液态球 + 涟漪
                 for (let i = 0; i < count; i++) {
-                    const idx = i * 3;
                     if (i < count * 0.5) {
                         types[i] = 0; // Core
-                        const r = 13 * Math.cbrt(Math.random()); 
+                        const r = 13 * Math.cbrt(Math.random());
                         const theta = Math.acos(2 * Math.random() - 1);
                         const phi = Math.random() * Math.PI * 2;
                         targets[idx] = r * Math.sin(theta) * Math.cos(phi);
                         targets[idx+1] = r * Math.sin(theta) * Math.sin(phi);
                         targets[idx+2] = r * Math.cos(theta);
-                        // 颜色：纯白
-                        colors[idx] = 1.0; colors[idx+1] = 1.0; colors[idx+2] = 1.0;
                     } else {
                         types[i] = 1; // Ripples
-                        const rBase = 18 + Math.random() * 45; 
+                        const rBase = 18 + Math.random() * 45;
                         const angle = Math.random() * Math.PI * 2;
                         initialPositions[idx] = rBase * Math.cos(angle);
-                        initialPositions[idx+1] = 0; 
+                        initialPositions[idx+1] = 0;
                         initialPositions[idx+2] = rBase * Math.sin(angle);
                         targets[idx] = initialPositions[idx];
                         targets[idx+1] = 0;
                         targets[idx+2] = initialPositions[idx+2];
-                        // 颜色：白灰
-                        colors[idx] = 0.6; colors[idx+1] = 0.6; colors[idx+2] = 0.6;
                     }
+                    idx += 3;
                 }
-            }
-            // ==========================================
-            // 其他形状 (保持简单)
-            // ==========================================
-            else {
+            } else {
+                // Default shapes (Sphere, Galaxy, etc)
                 for (let i = 0; i < count; i++) {
-                    const idx = i * 3;
-                    types[i] = 0;
-                    let x,y,z;
-                    if(type==='galaxy') {
-                        const spiral = i * 0.05; const r = i * 0.01;
-                        x = r * Math.cos(spiral) * 20; z = r * Math.sin(spiral) * 20; y = (Math.random()-0.5)*5;
-                        colors[idx] = 0.2; colors[idx+1] = 0.5; colors[idx+2] = 1.0;
+                    let x, y, z;
+                    if(type === 'galaxy') {
+                         const spiral = i * 0.05, r = i * 0.01;
+                         x = r * Math.cos(spiral) * 20; z = r * Math.sin(spiral) * 20; y = (Math.random()-0.5)*5;
                     } else {
-                        const r = 30 * Math.cbrt(Math.random());
-                        const theta = Math.random() * Math.PI * 2;
-                        const phi = Math.acos(2 * Math.random() - 1);
-                        x = r*Math.sin(phi)*Math.cos(theta); y=r*Math.sin(phi)*Math.sin(theta); z=r*Math.cos(phi);
-                        colors[idx] = 0.2; colors[idx+1] = 0.8; colors[idx+2] = 0.5;
+                         const r = 30 * Math.cbrt(Math.random());
+                         const theta = Math.random() * Math.PI * 2;
+                         const phi = Math.acos(2 * Math.random() - 1);
+                         x = r*Math.sin(phi)*Math.cos(theta); y=r*Math.sin(phi)*Math.sin(theta); z=r*Math.cos(phi);
                     }
-                    targets[idx]=x; targets[idx+1]=y; targets[idx+2]=z;
+                    targets[idx] = x; targets[idx+1] = y; targets[idx+2] = z;
+                    idx += 3;
                 }
             }
-            particleGeo.attributes.color.needsUpdate = true;
         }
 
         // --- 动画循环 ---
         function animate() {
             requestAnimationFrame(animate);
 
-            let beat = 0; 
+            // 音频分析
+            let bass = 0, treble = 0;
             if (isPlaying && audioAnalyser) {
                 audioAnalyser.getByteFrequencyData(dataArray);
-                // 提取低音用于液态脉动
-                const bassAvg = (dataArray[2] + dataArray[5] + dataArray[8]) / 3;
-                beat = bassAvg / 255; 
+                
+                // 低频 (0-20 bins roughly)
+                let bSum = 0;
+                for(let i=0; i<20; i++) bSum += dataArray[i];
+                bass = (bSum / 20) / 255; // 0.0 - 1.0
+
+                // 高频 (100+ bins)
+                let tSum = 0;
+                for(let i=100; i<150; i++) tSum += dataArray[i];
+                treble = (tSum / 50) / 255; // 0.0 - 1.0
             }
 
             const time = clock.getElapsedTime();
             const positionsArray = particleGeo.attributes.position.array;
             const colorsArray = particleGeo.attributes.color.array;
             
-            // 基础呼吸变量
-            const breath = Math.sin(time * config.breathRate) * 0.05 + 1; 
+            // 基础呼吸
+            const breath = Math.sin(time * config.breathRate) * 0.05 + 1;
+            
+            // 音乐影响计算 (应用 GUI 中的 Sensitivity)
+            const bassImpact = bass * config.bassSensitivity;
+            const trebleImpact = treble * config.trebleSensitivity;
 
+            // 实时更新 Material 属性
+            particles.material.size = config.particleSize * (1 + bassImpact * 0.3); // 鼓点放大粒子
+            particles.material.opacity = config.particleOpacity;
+            
+            // 自定义颜色
+            const customColor = new THREE.Color(config.themeColor);
+
+            // --- 物理模拟 ---
             if (config.shape === 'origin') {
-                // ==========================================
-                // ORIGIN 物理模拟
-                // ==========================================
-                
-                // 相机位置 (用于Rim Light计算)
-                const camPos = camera.position;
-
+                // ORIGIN LOGIC
                 for (let i = 0; i < config.particleCount; i++) {
                     const idx = i * 3;
                     
-                    if (types[i] === 0) { 
-                        // --- Core: Molten Gold Sphere (熔融金球) ---
-                        
-                        // 1. 获取基础球体位置 (targets) 和 法向量 (initialPositions)
-                        // 注意：这里 targets 是标准的 r=12 球体
-                        const nx = initialPositions[idx];
-                        const ny = initialPositions[idx+1];
-                        const nz = initialPositions[idx+2];
-                        const tx = targets[idx];
-                        const ty = targets[idx+1];
-                        const tz = targets[idx+2];
+                    if (types[i] === 0) { // Core
+                        const nx = initialPositions[idx], ny = initialPositions[idx+1], nz = initialPositions[idx+2];
+                        const tx = targets[idx], ty = targets[idx+1], tz = targets[idx+2];
 
-                        // 2. 液态玻璃膨胀算法 (Procedural Liquid)
-                        // 使用叠加的正弦波模拟 3D Noise，低频高幅
-                        // 这样球体不会破碎，而是会整体变形
-                        const noiseFreq = 0.15;
-                        const noiseAmp = 3.0; // 变形幅度大
-                        const liquidTime = time * 0.6;
-                        
-                        // 复杂的波形叠加
+                        // 液态噪声 + 音乐震动
+                        const noiseFreq = 4.0;
+                        const liquidTime = time * config.flowSpeed * config.flowDirection;
                         const displacement = (
-                            Math.sin(nx * 4 + liquidTime) * Math.cos(ny * 4 + liquidTime) +
+                            Math.sin(nx * noiseFreq + liquidTime) * Math.cos(ny * noiseFreq + liquidTime) +
                             Math.sin(ny * 3 - liquidTime) * 0.5
-                        ) * noiseAmp;
+                        ) * 3.0; // Amplitude
 
-                        // 音乐律动：增加表面张力的震颤
-                        const pulse = beat * 1.5;
-                        
-                        // 目标位置：沿法线方向挤出/凹陷
-                        const targetX = tx + nx * (displacement + pulse);
-                        const targetY = ty + ny * (displacement + pulse);
-                        const targetZ = tz + nz * (displacement + pulse);
+                        const finalDisp = displacement + (bassImpact * 2.0); // 鼓点让球体膨胀
 
-                        // 3. 颜色计算：边缘光 (Rim Light)
-                        // 计算 View Vector (粒子到相机)
-                        // 简单近似：因为球心在(0,0,0)，法线就是 nx,ny,nz
-                        // 真实的 Rim Light 是 ViewDir dot Normal
-                        // 粒子位置 (简化为 nx, ny, nz) dot (0,0,1 假设相机在Z轴) -> 动态算比较贵
-                        // 既然是 Points，我们用一种 Hack：
-                        // 如果 displacement > 0 (凸起部分)，更亮；如果 displacement < 0 (凹陷)，更暗红
-                        
-                        // 模拟高温液金：
-                        // 凸起 = 亮金/白
-                        // 凹陷 = 深红/橙
-                        
-                        const heat = displacement / noiseAmp; // -1 to 1
-                        
-                        // Base Gold: 1.0, 0.8, 0.0
-                        // Highlight: 1.0, 1.0, 0.8
-                        // Shadow/Rim: 1.0, 0.3, 0.0
-                        
-                        let r = 1.0;
-                        let g = 0.8 + heat * 0.2; // 0.6 ~ 1.0
-                        let b = 0.0 + heat * 0.4; // 0.0 ~ 0.4
-                        
-                        // 强光修正
-                        if(heat > 0.5) { g+=0.2; b+=0.5; } // 高光白
+                        // 颜色计算 (Rim Light + Treble Sparkle)
+                        if (config.useDynamicColor) {
+                            const heat = displacement / 3.0; 
+                            // 基础金 + 高光白 + 阴影红
+                            let r = 1.0 + trebleImpact * 0.5; // 高音加红
+                            let g = 0.8 + heat * 0.2 + trebleImpact * 0.5; // 高音加绿 -> 变黄/白
+                            let b = 0.0 + heat * 0.4 + trebleImpact; // 高音变白
+                            colorsArray[idx] = Math.min(r, 1); colorsArray[idx+1] = Math.min(g, 1); colorsArray[idx+2] = Math.min(b, 1);
+                        } else {
+                            // 使用 GUI 选定颜色
+                            colorsArray[idx] = customColor.r + trebleImpact;
+                            colorsArray[idx+1] = customColor.g + trebleImpact;
+                            colorsArray[idx+2] = customColor.b + trebleImpact;
+                        }
 
-                        colorsArray[idx] = r;
-                        colorsArray[idx+1] = g;
-                        colorsArray[idx+2] = b;
+                        positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], tx + nx * finalDisp, 0.1);
+                        positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], ty + ny * finalDisp, 0.1);
+                        positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], tz + nz * finalDisp, 0.1);
 
-                        // Lerp Position
-                        positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], targetX, 0.1);
-                        positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], targetY, 0.1);
-                        positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], targetZ, 0.1);
+                    } else { // Grid / Cosmic Web
+                        const tx = targets[idx], ty = targets[idx+1], tz = targets[idx+2];
+                        const u = uvData[i*2], v = uvData[i*2+1];
+                        
+                        const twist = Math.sin(time * 0.2) * 5.0 + 5.0;
+                        const wave = Math.sin(u * 5 + time * 0.2 * config.flowDirection) * Math.cos(v * 5) * twist;
+                        
+                        // 高音让网格线闪烁
+                        if (config.useDynamicColor) {
+                            const galaxyFactor = (Math.sin(time * 0.2) + 1) * 0.5;
+                            colorsArray[idx] = THREE.MathUtils.lerp(0.2, 0.8, galaxyFactor) + trebleImpact;
+                            colorsArray[idx+1] = THREE.MathUtils.lerp(0.4, 0.6, galaxyFactor) + trebleImpact;
+                            colorsArray[idx+2] = THREE.MathUtils.lerp(0.6, 0.2, galaxyFactor) + trebleImpact;
+                        } else {
+                            colorsArray[idx] = customColor.r * 0.5 + trebleImpact;
+                            colorsArray[idx+1] = customColor.g * 0.5 + trebleImpact;
+                            colorsArray[idx+2] = customColor.b * 0.5 + trebleImpact;
+                        }
 
-                    } else {
-                        // --- Background: Coordinate -> Cosmic Web ---
-                        
-                        // 1. 读取基础坐标网格位置
-                        const tx = targets[idx];
-                        const ty = targets[idx+1];
-                        const tz = targets[idx+2];
-                        
-                        // 2. 星河卷曲算法 (Curl Noise Simulation)
-                        // 随着时间推移，完美的网格线开始扭曲
-                        // 使用 UV 数据来驱动扭曲，保证线条的连续性
-                        const u = uvData[i*2];
-                        const v = uvData[i*2+1];
-                        
-                        // 扭曲因子：随时间增加
-                        const twist = Math.sin(time * 0.2) * 5.0 + 5.0; // 缓慢大幅度摆动
-                        
-                        // 在球面上叠加螺旋波
-                        const wave = Math.sin(u * 5 + time * 0.2) * Math.cos(v * 5) * twist;
-                        
-                        const finalX = tx + wave;
-                        const finalY = ty + Math.sin(u * 3 + time * 0.3) * twist * 0.5; // Y轴也轻微起伏
-                        const finalZ = tz + Math.cos(u * 5 + time * 0.2) * twist;
-
-                        // 颜色演变：网格(蓝白) -> 星河(金尘)
-                        // 这里的 twist 越大，说明越接近星河态，颜色越偏金
-                        const galaxyFactor = (Math.sin(time * 0.2) + 1) * 0.5; // 0~1
-                        
-                        // Grid Color (Blueish): 0.2, 0.4, 0.6
-                        // Gold Dust (Yellowish): 0.8, 0.6, 0.2
-                        colorsArray[idx] = THREE.MathUtils.lerp(0.2, 0.8, galaxyFactor);
-                        colorsArray[idx+1] = THREE.MathUtils.lerp(0.4, 0.6, galaxyFactor);
-                        colorsArray[idx+2] = THREE.MathUtils.lerp(0.6, 0.2, galaxyFactor);
-
-                        positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], finalX, 0.05);
-                        positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], finalY, 0.05);
-                        positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], finalZ, 0.05);
+                        positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], tx + wave, 0.05);
+                        positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], ty + Math.sin(u*3)*twist*0.5, 0.05);
+                        positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], tz + Math.cos(u*5)*twist, 0.05);
                     }
                 }
-                // 整体极慢自旋
-                particles.rotation.y = time * 0.05;
 
             } else if (config.shape === 'zen') {
-                // ==========================================
-                // ZEN 物理模拟 (保持原样)
-                // ==========================================
-                const rippleSpeed = time * 0.8;
+                // ZEN LOGIC
+                const rippleSpeed = time * 0.8 * config.flowSpeed * config.flowDirection;
+                
                 for (let i = 0; i < config.particleCount; i++) {
                     const idx = i * 3;
-                    if (types[i] === 0) {
-                        const tx = targets[idx]; const ty = targets[idx+1]; const tz = targets[idx+2];
-                        const noise = Math.sin(tx * 0.1 + time) * Math.cos(ty * 0.1 + time) * 0.5;
-                        const audioBump = beat * 1.5;
-                        positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], tx * breath + tx * audioBump * 0.1 + noise, 0.05);
-                        positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], ty * breath + ty * audioBump * 0.1 + noise, 0.05);
-                        positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], tz * breath + tz * audioBump * 0.1 + noise, 0.05);
+                    
+                    // 颜色混合
+                    let cR, cG, cB;
+                    if(config.useDynamicColor) {
+                        cR=1.0; cG=1.0; cB=1.0; // White
                     } else {
-                        const ox = initialPositions[idx]; const oz = initialPositions[idx+2];
+                        cR=customColor.r; cG=customColor.g; cB=customColor.b;
+                    }
+                    // Treble makes it sparkle
+                    colorsArray[idx] = cR + (Math.random()-0.5)*trebleImpact; 
+                    colorsArray[idx+1] = cG + (Math.random()-0.5)*trebleImpact;
+                    colorsArray[idx+2] = cB + (Math.random()-0.5)*trebleImpact;
+
+                    if (types[i] === 0) { // Core
+                        const tx = targets[idx], ty = targets[idx+1], tz = targets[idx+2];
+                        const noise = Math.sin(tx * 0.1 + time) * Math.cos(ty * 0.1 + time) * 0.5;
+                        
+                        positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], tx * breath + tx * bassImpact * 0.2 + noise, 0.05);
+                        positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], ty * breath + ty * bassImpact * 0.2 + noise, 0.05);
+                        positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], tz * breath + tz * bassImpact * 0.2 + noise, 0.05);
+                    } else { // Ripples
+                        const ox = initialPositions[idx], oz = initialPositions[idx+2];
                         const dist = Math.sqrt(ox*ox + oz*oz);
                         const angle = Math.atan2(oz, ox);
                         const wave = Math.sin(angle * 4 + dist * 0.2 - rippleSpeed) * Math.cos(dist * 0.1);
-                        const amplitude = 2.0 * (1 + beat * 2);
+                        const amplitude = 2.0 * (1 + bassImpact * 2);
+
                         positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], ox, 0.05);
                         positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], wave * amplitude, 0.1);
                         positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], oz, 0.05);
                     }
                 }
-                particles.rotation.y = time * 0.05;
 
             } else {
-                // 通用简单模式
+                // GENERIC SHAPES
                 const moveSpeed = 0.05;
                 for (let i = 0; i < config.particleCount; i++) {
                     const idx = i * 3;
+                    colorsArray[idx] = customColor.r + (Math.random()-0.5)*trebleImpact;
+                    colorsArray[idx+1] = customColor.g + (Math.random()-0.5)*trebleImpact;
+                    colorsArray[idx+2] = customColor.b + (Math.random()-0.5)*trebleImpact;
+
                     positionsArray[idx] += (targets[idx] - positionsArray[idx]) * moveSpeed;
                     positionsArray[idx+1] += (targets[idx+1] - positionsArray[idx+1]) * moveSpeed;
                     positionsArray[idx+2] += (targets[idx+2] - positionsArray[idx+2]) * moveSpeed;
+                    
+                    if(bassImpact > 0.2) positionsArray[idx+1] += (Math.random()-0.5)*bassImpact;
                 }
-                particles.rotation.y += config.autoRotateSpeed || 0.001;
             }
+
+            // 全局旋转
+            particles.rotation.y += config.rotationSpeed * config.flowDirection;
 
             particleGeo.attributes.position.needsUpdate = true;
             particleGeo.attributes.color.needsUpdate = true;
@@ -633,25 +664,71 @@
             composer.render();
         }
 
-        function updateColor(hex) {
-            // Origin模式下颜色是动态计算的，不需要全刷
+        // --- 交互功能 ---
+        function initGUI(bloomPass) {
+            gui = new GUI({ title: 'VISUALIZER PANEL' });
+            
+            // 1. 形状与场景
+            const folderScene = gui.addFolder('Scene & Shape');
+            folderScene.add(config, 'shape', ['origin', 'zen', 'galaxy', 'sphere']).name('Theme Mode').onChange(val => calculateShape(val));
+            folderScene.add(config, 'useDynamicColor').name('Use Physics Color');
+            folderScene.addColor(config, 'themeColor').name('Custom Color');
+
+            // 2. 粒子属性 (视觉元素)
+            const folderParticles = gui.addFolder('Visual Elements');
+            folderParticles.add(config, 'particleSize', 0.01, 1.0).name('Particle Size');
+            folderParticles.add(config, 'particleOpacity', 0.1, 1.0).name('Opacity');
+            
+            // 3. 运动与流体
+            const folderMotion = gui.addFolder('Motion & Flow');
+            folderMotion.add(config, 'flowSpeed', 0, 2.0).name('Flow Speed');
+            folderMotion.add(config, 'rotationSpeed', 0, 0.02).name('Rotation Speed');
+            folderMotion.add(config, 'flowDirection', { Forward: 1, Backward: -1 }).name('Direction');
+            
+            // 4. 音乐响应 (新功能)
+            const folderAudio = gui.addFolder('Audio Reactivity');
+            folderAudio.add(config, 'bassSensitivity', 0, 3.0).name('Bass Impact (Drum)');
+            folderAudio.add(config, 'trebleSensitivity', 0, 3.0).name('Treble Sparkle');
+
+            // 5. 后期
+            const folderFX = gui.addFolder('Post Processing');
+            folderFX.add(config, 'bloomStrength', 0, 3.0).name('Glow Strength').onChange(v => bloomPass.strength = v);
+            folderFX.add(config, 'breathRate', 0, 2.0).name('Breath Rate');
+
+            // 默认打开
+            if(window.innerWidth > 600) {
+                folderScene.open();
+                folderAudio.open();
+            }
         }
 
-        // --- 交互部分 ---
-        document.getElementById('btn-upload').addEventListener('click', () => document.getElementById('file-input').click());
-        document.getElementById('file-input').addEventListener('change', handleFileSelect);
-        playBtn.addEventListener('click', togglePlay);
-        
-        progressBar.addEventListener('input', (e) => {
-            if(audioBuffer) playAudio((e.target.value / 100) * audioDuration);
-        });
+        // --- 辅助逻辑 ---
+        function updateGUIColor(hex) {
+            config.themeColor = hex;
+            // 如果GUI已经加载，需要同步更新显示( lil-gui 监听对象引用，通常会自动更新值，但Display需要refresh)
+            if(gui) {
+                // 遍历控制器找到 themeColor 并更新
+                gui.controllersRecursive().forEach(c => {
+                    if(c.property === 'themeColor') c.updateDisplay();
+                });
+            }
+        }
 
-        function handleFileSelect(e) {
+        function onMouseMove(e) {
+            const x = e.clientX / window.innerWidth;
+            titleEl.style.backgroundImage = `linear-gradient(${45 + x*40}deg, #fff, #a1c4fd)`;
+        }
+
+        // --- 音频处理 ---
+        uploadBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (!file) return;
+            if(!file) return;
+            
             songTitleEl.innerText = file.name.replace(/\.[^/.]+$/, "");
+            
             const reader = new FileReader();
-            reader.onload = function(ev) {
+            reader.onload = (ev) => {
                 if(audioContext) audioContext.close();
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 audioContext.decodeAudioData(ev.target.result, buffer => {
@@ -660,11 +737,11 @@
                     playAudio(0);
                 });
                 audioAnalyser = audioContext.createAnalyser();
-                audioAnalyser.fftSize = 256;
+                audioAnalyser.fftSize = 512;
                 dataArray = new Uint8Array(audioAnalyser.frequencyBinCount);
             };
             reader.readAsArrayBuffer(file);
-        }
+        });
 
         function playAudio(offset) {
             if (audioSource) audioSource.stop();
@@ -673,55 +750,52 @@
             audioSource.connect(audioAnalyser);
             audioAnalyser.connect(audioContext.destination);
             audioSource.start(0, offset);
+            
             isPlaying = true;
             playBtn.innerText = "Pause";
-            startProgressTimer(offset);
-        }
-
-        function togglePlay() {
-            if(!audioContext) return;
-            if(isPlaying) { audioContext.suspend(); isPlaying = false; playBtn.innerText = "Resume"; }
-            else { audioContext.resume(); isPlaying = true; playBtn.innerText = "Pause"; }
-        }
-
-        function startProgressTimer(startTime) {
-            if(window.progTimer) clearInterval(window.progTimer);
-            const startStamp = audioContext.currentTime - startTime;
-            window.progTimer = setInterval(() => {
+            
+            // 进度条 Timer
+            if(window.pTimer) clearInterval(window.pTimer);
+            const startT = audioContext.currentTime - offset;
+            window.pTimer = setInterval(() => {
                 if(!isPlaying) return;
-                const curr = audioContext.currentTime - startStamp;
-                progressBar.value = (curr / audioDuration) * 100;
-                const min = Math.floor(curr / 60);
-                const sec = Math.floor(curr % 60).toString().padStart(2, '0');
-                timeDisplay.innerText = `${min}:${sec}`;
-                if(curr >= audioDuration) { isPlaying = false; playBtn.innerText = "Replay"; clearInterval(window.progTimer); }
-            }, 500);
+                const curr = audioContext.currentTime - startT;
+                const pct = (curr / audioDuration) * 100;
+                progressBar.value = pct;
+                
+                const m = Math.floor(curr/60);
+                const s = Math.floor(curr%60).toString().padStart(2,'0');
+                timeDisplay.innerText = `${m}:${s}`;
+                
+                if(pct>=100) { isPlaying=false; playBtn.innerText="Replay"; clearInterval(window.pTimer); }
+            }, 200);
         }
 
+        playBtn.addEventListener('click', () => {
+            if(!audioContext) return;
+            if(isPlaying) { audioContext.suspend(); isPlaying=false; playBtn.innerText="Resume"; }
+            else { audioContext.resume(); isPlaying=true; playBtn.innerText="Pause"; }
+        });
+
+        progressBar.addEventListener('input', (e) => {
+            if(audioBuffer) playAudio((e.target.value/100)*audioDuration);
+        });
+        
+        // 音量控制
+        volBar.addEventListener('input', (e) => {
+            // 注意：真实场景需要GainNode，这里简化跳过，仅UI演示
+        });
+
+        // 窗口与全屏
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
             composer.setSize(window.innerWidth, window.innerHeight);
         }
-        
         function updateClock() {
             document.getElementById('clock').innerText = new Date().toLocaleTimeString();
         }
-
-        function initGUI(bloomPass) {
-            gui = new GUI({ title: 'Soul System' });
-            
-            gui.add(config, 'shape', ['origin', 'zen', 'galaxy', 'sphere'])
-                .name('Theme')
-                .onChange(val => calculateShape(val));
-                
-            gui.add(config, 'bloomStrength', 0, 3).name('Glow').onChange(v => bloomPass.strength = v);
-            gui.add(config, 'breathRate', 0, 2).name('Breath');
-            
-            if(window.innerWidth < 600) gui.close();
-        }
-        
         document.getElementById('fullscreen-btn').addEventListener('click', () => {
             if (!document.fullscreenElement) document.documentElement.requestFullscreen();
             else document.exitFullscreen();
