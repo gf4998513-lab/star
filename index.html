@@ -605,4 +605,123 @@
                         const wave = Math.sin(u * 5 + time * 0.2 * config.flowDirection) * Math.cos(v * 5) * twist;
                         if (config.useDynamicColor) {
                             const galaxyFactor = (Math.sin(time * 0.2) + 1) * 0.5;
-                            colorsArray[idx] = THREE.MathUtils.lerp(0.2, 0.8, galaxyFactor) + trebleImpact;
+                            colorsArray[idx] = THREE.MathUtils.lerp(0.2, 0.8, galaxyFactor) + trebleImpact; colorsArray[idx+1] = THREE.MathUtils.lerp(0.4, 0.6, galaxyFactor) + trebleImpact; colorsArray[idx+2] = THREE.MathUtils.lerp(0.6, 0.2, galaxyFactor) + trebleImpact;
+                        } else { colorsArray[idx] = customColor.r * 0.5 + trebleImpact; colorsArray[idx+1] = customColor.g * 0.5 + trebleImpact; colorsArray[idx+2] = customColor.b * 0.5 + trebleImpact; }
+                        positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], tx + wave, 0.05); positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], ty + Math.sin(u*3)*twist*0.5, 0.05); positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], tz + Math.cos(u*5)*twist, 0.05);
+                    }
+                }
+                particles.rotation.y += config.rotationSpeed * config.flowDirection;
+            } else if (config.shape === 'zen') {
+                 // ... (Zen Physics)
+                const rippleSpeed = time * 0.8 * config.flowSpeed * config.flowDirection;
+                for (let i = 0; i < config.particleCount; i++) {
+                    const idx = i * 3;
+                    let cR = config.useDynamicColor ? 1.0 : customColor.r; let cG = config.useDynamicColor ? 1.0 : customColor.g; let cB = config.useDynamicColor ? 1.0 : customColor.b;
+                    colorsArray[idx] = cR + (Math.random()-0.5)*trebleImpact; colorsArray[idx+1] = cG + (Math.random()-0.5)*trebleImpact; colorsArray[idx+2] = cB + (Math.random()-0.5)*trebleImpact;
+                    if (types[i] === 0) {
+                        const tx = targets[idx], ty = targets[idx+1], tz = targets[idx+2];
+                        const noise = Math.sin(tx * 0.1 + time) * Math.cos(ty * 0.1 + time) * 0.5;
+                        positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], tx * breath + tx * bassImpact * 0.2 + noise, 0.05); positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], ty * breath + ty * bassImpact * 0.2 + noise, 0.05); positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], tz * breath + tz * bassImpact * 0.2 + noise, 0.05);
+                    } else {
+                        const ox = initialPositions[idx], oz = initialPositions[idx+2];
+                        const dist = Math.sqrt(ox*ox + oz*oz); const angle = Math.atan2(oz, ox);
+                        const wave = Math.sin(angle * 4 + dist * 0.2 - rippleSpeed) * Math.cos(dist * 0.1);
+                        const amplitude = 2.0 * (1 + bassImpact * 2);
+                        positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], ox, 0.05); positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], wave * amplitude, 0.1); positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], oz, 0.05);
+                    }
+                }
+                particles.rotation.y += config.rotationSpeed * config.flowDirection;
+            }
+
+            particleGeo.attributes.position.needsUpdate = true;
+            particleGeo.attributes.color.needsUpdate = true;
+            controls.update();
+            composer.render();
+        }
+
+        function initGUI(bloomPass) {
+            gui = new GUI({ title: 'VISUALIZER PANEL' });
+            const folderScene = gui.addFolder('Theme & Form');
+            folderScene.add(config, 'shape', ['origin', 'zen', 'nebula', 'cumulus'])
+                       .name('Mode')
+                       .onChange(val => calculateShape(val));
+            folderScene.add(config, 'useDynamicColor').name('Auto Color');
+            folderScene.addColor(config, 'themeColor').name('Manual Color');
+
+            const folderParticles = gui.addFolder('Particle Optics');
+            folderParticles.add(config, 'particleSize', 0.01, 1.0).name('Size / Density');
+            folderParticles.add(config, 'particleOpacity', 0.1, 1.0).name('Opacity');
+            
+            const folderMotion = gui.addFolder('Motion Dynamics');
+            folderMotion.add(config, 'flowSpeed', 0, 1.0).name('Gravity');
+            folderMotion.add(config, 'rotationSpeed', 0, 0.02).name('Spin');
+            
+            const folderAudio = gui.addFolder('Audio Response');
+            folderAudio.add(config, 'bassSensitivity', 0, 3.0).name('Bass (Shake)');
+            folderAudio.add(config, 'trebleSensitivity', 0, 3.0).name('Treble (Flash)');
+
+            const folderFX = gui.addFolder('Post-Processing');
+            folderFX.add(config, 'bloomStrength', 0, 3.0).name('Glow Intensity').onChange(v => bloomPass.strength = v);
+            
+            if(window.innerWidth > 600) { folderScene.open(); folderAudio.open(); }
+        }
+
+        function updateGUIColor(hex) {
+            config.themeColor = hex;
+            if(gui) gui.controllersRecursive().forEach(c => { if(c.property === 'themeColor') c.updateDisplay(); });
+        }
+        function onMouseMove(e) {
+            const x = e.clientX / window.innerWidth;
+            if(config.shape !== 'nebula' && config.shape !== 'cumulus') {
+                 titleEl.style.backgroundImage = `linear-gradient(${45 + x*40}deg, #fff, #a1c4fd)`;
+            }
+        }
+        uploadBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0]; if(!file) return;
+            songTitleEl.innerText = file.name.replace(/\.[^/.]+$/, "");
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                if(audioContext) audioContext.close();
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                audioContext.decodeAudioData(ev.target.result, buffer => {
+                    audioBuffer = buffer; audioDuration = buffer.duration; playAudio(0);
+                });
+                audioAnalyser = audioContext.createAnalyser(); audioAnalyser.fftSize = 512;
+                dataArray = new Uint8Array(audioAnalyser.frequencyBinCount);
+            };
+            reader.readAsArrayBuffer(file);
+        });
+        function playAudio(offset) {
+            if (audioSource) audioSource.stop();
+            audioSource = audioContext.createBufferSource(); audioSource.buffer = audioBuffer;
+            audioSource.connect(audioAnalyser); audioAnalyser.connect(audioContext.destination);
+            audioSource.start(0, offset); isPlaying = true; playBtn.innerText = "Pause";
+            if(window.pTimer) clearInterval(window.pTimer);
+            const startT = audioContext.currentTime - offset;
+            window.pTimer = setInterval(() => {
+                if(!isPlaying) return;
+                const curr = audioContext.currentTime - startT; const pct = (curr / audioDuration) * 100;
+                progressBar.value = pct; const m = Math.floor(curr/60); const s = Math.floor(curr%60).toString().padStart(2,'0');
+                timeDisplay.innerText = `${m}:${s}`;
+                if(pct>=100) { isPlaying=false; playBtn.innerText="Replay"; clearInterval(window.pTimer); }
+            }, 200);
+        }
+        playBtn.addEventListener('click', () => {
+            if(!audioContext) return;
+            if(isPlaying) { audioContext.suspend(); isPlaying=false; playBtn.innerText="Resume"; }
+            else { audioContext.resume(); isPlaying=true; playBtn.innerText="Pause"; }
+        });
+        progressBar.addEventListener('input', (e) => { if(audioBuffer) playAudio((e.target.value/100)*audioDuration); });
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight); composer.setSize(window.innerWidth, window.innerHeight);
+        }
+        function updateClock() { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }
+        document.getElementById('fullscreen-btn').addEventListener('click', () => {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen();
+        });
+        init();
+    </script>
+</body>
+</html>
