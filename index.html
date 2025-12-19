@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DAVID MUSIC - Biological Void</title>
+    <title>DAVID MUSIC - Singularity</title>
     <style>
         /* --- 全局样式 --- */
         body, html {
@@ -12,7 +12,7 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #020202; /* 极深黑 */
+            background-color: #000000; /* 绝对黑 */
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             user-select: none;
         }
@@ -33,7 +33,7 @@
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            text-shadow: 0 0 30px rgba(255,255,255,0.15);
+            text-shadow: 0 0 40px rgba(255,255,255,0.2);
             transition: opacity 0.5s;
         }
 
@@ -44,26 +44,21 @@
             left: 30px;
             z-index: 20;
             color: #ccc;
-            background: rgba(10, 10, 10, 0.6);
-            backdrop-filter: blur(20px); /* 更强的模糊营造深邃感 */
+            background: rgba(5, 5, 5, 0.75);
+            backdrop-filter: blur(20px);
             padding: 20px;
             border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             width: 280px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.9);
             transition: transform 0.3s;
         }
         
-        .control-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 15px;
-        }
+        .control-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
 
         button {
             background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
             color: #ddd;
             padding: 8px 16px;
             border-radius: 20px;
@@ -71,117 +66,66 @@
             font-size: 0.85rem;
             transition: all 0.3s;
         }
-        button:hover {
-            background: rgba(255,255,255,0.1);
-            border-color: #fff;
-            color: #fff;
-        }
+        button:hover { background: rgba(255,255,255,0.15); border-color: #fff; color: #fff; }
 
         input[type="range"] {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 2px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 2px;
-            outline: none;
-            margin: 10px 0;
+            -webkit-appearance: none; width: 100%; height: 2px;
+            background: rgba(255,255,255,0.15); border-radius: 2px; outline: none; margin: 10px 0;
         }
         input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #fff;
-            cursor: pointer;
-            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+            -webkit-appearance: none; width: 10px; height: 10px; border-radius: 50%;
+            background: #fff; cursor: pointer; box-shadow: 0 0 10px rgba(255,255,255,0.5);
         }
         
         .song-info {
-            font-size: 1rem;
-            font-weight: 300;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-bottom: 5px;
-            color: #eee;
+            font-size: 1rem; font-weight: 300; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            margin-bottom: 5px; color: #fff;
         }
-        .artist-name {
-            font-size: 0.75rem;
-            color: #666;
-            margin-bottom: 15px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
+        .artist-name { font-size: 0.75rem; color: #888; margin-bottom: 15px; letter-spacing: 2px; text-transform: uppercase; }
 
         #file-input { display: none; }
-
+        
         #clock {
-            position: absolute;
-            bottom: 30px;
-            left: 30px;
-            color: rgba(255, 255, 255, 0.3);
-            font-family: 'Helvetica Neue', sans-serif;
-            font-weight: 100;
-            font-size: 0.9rem;
-            letter-spacing: 2px;
-            z-index: 10;
+            position: absolute; bottom: 30px; left: 30px;
+            color: rgba(255, 255, 255, 0.4);
+            font-family: 'Helvetica Neue', sans-serif; font-weight: 100; font-size: 0.9rem; letter-spacing: 2px; z-index: 10;
         }
 
         #fullscreen-btn {
-            position: absolute;
-            bottom: 30px;
-            right: 30px;
-            z-index: 20;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: white;
-            width: 40px; height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1.2rem;
-            transition: all 0.3s;
+            position: absolute; bottom: 30px; right: 30px; z-index: 20;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;
+            width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; transition: all 0.3s;
         }
         #fullscreen-btn:hover { background: rgba(255,255,255,0.2); }
 
-        .lil-gui.root {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 100;
-        }
-
+        .lil-gui.root { position: absolute; top: 20px; right: 20px; z-index: 100; }
+        
         #loading {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            color: #444;
-            font-size: 0.8rem;
-            letter-spacing: 4px;
-            pointer-events: none;
-            transition: opacity 0.5s;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: #666; font-size: 0.8rem; letter-spacing: 4px; pointer-events: none; transition: opacity 0.5s;
         }
     </style>
 </head>
 <body>
 
     <div id="header-title">DAVID MUSIC</div>
-    <div id="loading">INITIALIZING VOID...</div>
+    <div id="loading">GENERATING SINGULARITY...</div>
 
     <div id="player-controls">
-        <div class="song-info" id="current-song">Select Audio Track</div>
-        <div class="artist-name">System Ready</div>
+        <div class="song-info" id="current-song">Awaiting Input</div>
+        <div class="artist-name">System Online</div>
         
         <div class="control-row">
-            <button id="btn-upload">Load File</button>
+            <button id="btn-upload">Load Music</button>
             <button id="btn-play">Play</button>
         </div>
         
         <div style="font-size: 0.7rem; color:#666; display:flex; justify-content:space-between;">
-            <span>TIMELINE</span> <span id="time-display">0:00</span>
+            <span>PROGRESS</span> <span id="time-display">0:00</span>
         </div>
         <input type="range" id="progress-bar" value="0" min="0" max="100" step="0.1">
         
-        <div style="font-size: 0.7rem; color:#666; margin-top:5px;">GAIN</div>
+        <div style="font-size: 0.7rem; color:#666; margin-top:5px;">INTENSITY</div>
         <input type="range" id="vol-bar" value="0.7" min="0" max="1" step="0.01">
 
         <input type="file" id="file-input" accept="audio/*" multiple>
@@ -209,34 +153,34 @@
 
         // --- 全局配置 ---
         const config = {
-            particleCount: 22000,
-            shape: 'nebula', // 默认设为新的 Nebula (原Galaxy位)
+            particleCount: 25000,
+            shape: 'nebula', // 注意：这里虽然ID叫 nebula，但内部逻辑已改为 "Singularity"
             
             // 视觉调节
-            particleSize: 0.35, // 稍微大一点，营造散景感
-            particleOpacity: 0.7,
-            themeColor: '#ffffff', // 默认基色
+            particleSize: 0.25,
+            particleOpacity: 0.8,
+            themeColor: '#ffffff',
             useDynamicColor: true, 
             
             // 运动调节
-            flowSpeed: 0.2, // 极慢的漂移
-            rotationSpeed: 0.0005,
+            flowSpeed: 0.3, // 爆炸速度
+            rotationSpeed: 0.0002, // 极慢的整体漂移
             flowDirection: 1,
             
             // 音乐响应
-            bassSensitivity: 1.2,
-            trebleSensitivity: 1.8, // 高音对闪烁影响大
+            bassSensitivity: 1.5, // 冲击波强度
+            trebleSensitivity: 2.0, // 核心闪烁强度
             
             // 后期特效
-            bloomStrength: 1.2,
-            bloomRadius: 0.8, // 大范围柔光
-            breathRate: 0.4
+            bloomStrength: 1.8,
+            bloomRadius: 0.6,
+            breathRate: 0.5
         };
 
         let scene, camera, renderer, composer, controls;
         let particles, particleGeo;
-        let positions, targets, initialPositions;
-        let types, uvData, colorAttributes; 
+        let positions, targets, initialPositions; // initialPositions 在Singularity模式下存储速度向量
+        let types, uvData, colorAttributes, lifeData; // lifeData 用于循环爆炸
         
         let clock = new THREE.Clock();
         let audioContext, audioAnalyser, audioSource, audioBuffer;
@@ -245,7 +189,7 @@
         let audioDuration = 0;
         let gui;
 
-        // UI Elements
+        // UI
         const titleEl = document.getElementById('header-title');
         const songTitleEl = document.getElementById('current-song');
         const timeDisplay = document.getElementById('time-display');
@@ -256,7 +200,7 @@
 
         function init() {
             scene = new THREE.Scene();
-            scene.fog = new THREE.FogExp2(0x020202, 0.003); // 极深雾
+            scene.fog = new THREE.FogExp2(0x000000, 0.002); // Deep Void
 
             camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 2000);
             camera.position.set(0, 5, 80);
@@ -269,15 +213,14 @@
 
             controls = new OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
-            controls.dampingFactor = 0.02; // 更滑腻的手感
+            controls.dampingFactor = 0.03;
             controls.autoRotate = true;
             controls.autoRotateSpeed = 0.2;
 
-            // Post-Processing
             const renderScene = new RenderPass(scene, camera);
             const bloomPass = new UnrealBloomPass(
                 new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2), 
-                config.bloomStrength, config.bloomRadius, 0.05
+                config.bloomStrength, config.bloomRadius, 0.02
             );
             
             composer = new EffectComposer(renderer);
@@ -296,10 +239,7 @@
         }
 
         function createParticles() {
-            if(particles) {
-                scene.remove(particles);
-                particleGeo.dispose();
-            }
+            if(particles) { scene.remove(particles); particleGeo.dispose(); }
 
             particleGeo = new THREE.BufferGeometry();
             positions = new Float32Array(config.particleCount * 3);
@@ -309,19 +249,18 @@
             
             types = new Int8Array(config.particleCount);
             uvData = new Float32Array(config.particleCount * 2);
-            // 存储每个粒子的固有色，用于在 Nebula 模式下保持多彩
-            colorAttributes = new Float32Array(config.particleCount * 3); 
+            colorAttributes = new Float32Array(config.particleCount * 3);
+            lifeData = new Float32Array(config.particleCount); // 存储每个粒子的生命周期 (距离)
 
             const c = new THREE.Color(config.themeColor);
 
             for (let i = 0; i < config.particleCount; i++) {
-                positions[i * 3] = (Math.random() - 0.5) * 150;
-                positions[i * 3 + 1] = (Math.random() - 0.5) * 150;
-                positions[i * 3 + 2] = (Math.random() - 0.5) * 150;
+                // 初始化位置：在中心附近
+                positions[i * 3] = (Math.random() - 0.5) * 5;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 5;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 5;
 
-                colors[i * 3] = c.r;
-                colors[i * 3 + 1] = c.g;
-                colors[i * 3 + 2] = c.b;
+                colors[i * 3] = c.r; colors[i * 3 + 1] = c.g; colors[i * 3 + 2] = c.b;
             }
 
             particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
@@ -347,10 +286,11 @@
             const canvas = document.createElement('canvas');
             canvas.width = 64; canvas.height = 64;
             const ctx = canvas.getContext('2d');
-            // 制作更柔和的散景光斑
+            // 散景效果：中心实，边缘非常柔和
             const grad = ctx.createRadialGradient(32,32,0,32,32,32);
-            grad.addColorStop(0, 'rgba(255,255,255,0.8)');
-            grad.addColorStop(0.4, 'rgba(255,255,255,0.2)');
+            grad.addColorStop(0, 'rgba(255,255,255,1)');
+            grad.addColorStop(0.2, 'rgba(255,255,255,0.8)');
+            grad.addColorStop(0.5, 'rgba(255,255,255,0.2)');
             grad.addColorStop(1, 'rgba(0,0,0,0)');
             ctx.fillStyle = grad;
             ctx.fillRect(0,0,64,64);
@@ -359,92 +299,71 @@
             return tex;
         }
 
-        // --- 形状计算逻辑 ---
         function calculateShape(type) {
             config.shape = type;
             const count = config.particleCount;
-            const colors = particleGeo.attributes.color.array;
             let idx = 0;
-
-            // UI 状态反馈
-            if(type === 'origin') {
-                if(config.useDynamicColor) updateGUIColor('#ffcc00');
-                titleEl.style.backgroundImage = 'linear-gradient(180deg, #fff, #ffae00)';
-            } else if (type === 'zen') {
-                if(config.useDynamicColor) updateGUIColor('#ffffff');
-                titleEl.style.backgroundImage = 'linear-gradient(180deg, #fff, #999)';
-            } else if (type === 'nebula') {
-                // Nebula 模式不需要单一主题色
-                titleEl.style.backgroundImage = 'linear-gradient(135deg, #00ffff, #ff00ff, #ffcc00)';
-            }
 
             if (type === 'nebula') {
                 // ==========================================
-                // 1. NEBULA (生物发光细胞 + 虚空流场)
+                // 1. SINGULARITY (奇点/径向爆发)
                 // ==========================================
+                titleEl.style.backgroundImage = 'linear-gradient(135deg, #fff, #ffcc00, #ff00ff)';
                 
-                // 定义几个“细胞核”或“能量团”的中心
-                const clusters = [
-                    { x: 0, y: 0, z: 0, color: [0, 1, 1] },       // Cyan (中心)
-                    { x: 30, y: 15, z: -10, color: [1, 0, 1] },   // Magenta
-                    { x: -30, y: -20, z: 10, color: [0, 1, 1] },  // Cyan
-                    { x: 10, y: 40, z: 20, color: [1, 0.8, 0] },  // Amber
-                    { x: -20, y: 10, z: -40, color: [1, 0, 1] },  // Magenta
-                    { x: 40, y: -30, z: 0, color: [1, 0.8, 0] }   // Amber
-                ];
-
                 for (let i = 0; i < count; i++) {
-                    types[i] = 2; // Mark as Nebula type
-
-                    // 随机选择一个 cluster
-                    const cluster = clusters[Math.floor(Math.random() * clusters.length)];
+                    // 分配类型
+                    // Type 0: Golden Core (最快，最亮)
+                    // Type 1: Magenta Shockwave (中速)
+                    // Type 2: Cyan Mist (最慢，最广)
+                    const rand = Math.random();
+                    let pType = 2;
+                    if(rand < 0.3) pType = 0;
+                    else if(rand < 0.65) pType = 1;
                     
-                    // 使用高斯分布围绕中心生成粒子 (Gaussian Cloud)
-                    // 这种分布会产生中心密集、边缘稀疏柔和的效果
-                    const spread = 15 + Math.random() * 10; // 团块大小
+                    types[i] = pType;
+
+                    // 计算爆炸方向 (Normalized Vector)
+                    const theta = Math.random() * Math.PI * 2;
+                    const phi = Math.acos(2 * Math.random() - 1);
                     
-                    // Box-Muller transform for normal distribution
-                    const u = 1 - Math.random(); 
-                    const v = Math.random();
-                    const z1 = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
-                    const z2 = Math.sqrt(-2.0 * Math.log(u)) * Math.sin(2.0 * Math.PI * v);
-                    const z3 = Math.sqrt(-2.0 * Math.log(1-Math.random())) * Math.cos(2.0 * Math.PI * Math.random());
+                    const nx = Math.sin(phi) * Math.cos(theta);
+                    const ny = Math.sin(phi) * Math.sin(theta);
+                    const nz = Math.cos(phi);
+
+                    // initialPositions 存储方向向量 * 随机速度差异
+                    const speedVar = 0.5 + Math.random() * 0.5;
+                    initialPositions[idx] = nx * speedVar;
+                    initialPositions[idx+1] = ny * speedVar;
+                    initialPositions[idx+2] = nz * speedVar;
+
+                    // 初始位置：根据类型分布在“时间轴”上，避免一开始所有粒子都在0点
+                    // 模拟一个已经发生的爆炸瞬间
+                    const startDist = Math.random() * 60; // 0-60 radius
+                    targets[idx] = nx * startDist;
+                    targets[idx+1] = ny * startDist;
+                    targets[idx+2] = nz * startDist;
                     
-                    const tx = cluster.x + z1 * spread;
-                    const ty = cluster.y + z2 * spread;
-                    const tz = cluster.z + z3 * spread;
+                    // lifeData 存储当前距离，用于循环
+                    lifeData[i] = startDist;
 
-                    targets[idx] = tx;
-                    targets[idx+1] = ty;
-                    targets[idx+2] = tz;
-
-                    // 存储初始位置用于流场计算基准
-                    initialPositions[idx] = tx;
-                    initialPositions[idx+1] = ty;
-                    initialPositions[idx+2] = tz;
+                    // 预设颜色 (Muted Palette)
+                    // Gold: 1.0, 0.8, 0.0
+                    // Magenta: 1.0, 0.0, 0.8
+                    // Cyan: 0.0, 0.9, 1.0
+                    if (pType === 0) { // Gold
+                         colorAttributes[idx]=1.0; colorAttributes[idx+1]=0.8; colorAttributes[idx+2]=0.0;
+                    } else if (pType === 1) { // Magenta
+                         colorAttributes[idx]=1.0; colorAttributes[idx+1]=0.0; colorAttributes[idx+2]=0.8;
+                    } else { // Cyan
+                         colorAttributes[idx]=0.0; colorAttributes[idx+1]=0.9; colorAttributes[idx+2]=1.0;
+                    }
                     
-                    // 颜色分配：基于 Cluster 颜色，但做低饱和处理 (Muted)
-                    // 并且加入一些随机变奏
-                    const noise = (Math.random() - 0.5) * 0.2;
-                    // 混入白色以降低饱和度 (Muted Color Harmony)
-                    const muteFactor = 0.3; 
-                    
-                    const r = cluster.color[0] * (1-muteFactor) + muteFactor + noise;
-                    const g = cluster.color[1] * (1-muteFactor) + muteFactor + noise;
-                    const b = cluster.color[2] * (1-muteFactor) + muteFactor + noise;
-
-                    colorAttributes[idx] = r; 
-                    colorAttributes[idx+1] = g;
-                    colorAttributes[idx+2] = b;
-
-                    // 初始化 buffer 颜色
-                    colors[idx] = r; colors[idx+1] = g; colors[idx+2] = b;
-
                     idx += 3;
                 }
             } 
             else if (type === 'origin') {
-                // Origin Logic (保持不变)
+                // Origin Logic (Original)
+                titleEl.style.backgroundImage = 'linear-gradient(180deg, #fff, #ffae00)';
                 const coreCount = Math.floor(count * 0.55);
                 const goldenRatio = (1 + Math.sqrt(5)) / 2;
                 for (let i = 0; i < coreCount; i++) {
@@ -483,7 +402,8 @@
                 }
             } 
             else if (type === 'zen') {
-                // Zen Logic (保持不变)
+                // Zen Logic (Original)
+                titleEl.style.backgroundImage = 'linear-gradient(180deg, #fff, #999)';
                 for (let i = 0; i < count; i++) {
                     if (i < count * 0.5) {
                         types[i] = 0; 
@@ -508,8 +428,8 @@
                 }
             } 
             else {
-                // Sphere (Generic)
-                for (let i = 0; i < count; i++) {
+                // Sphere
+                 for (let i = 0; i < count; i++) {
                     const r = 30 * Math.cbrt(Math.random());
                     const theta = Math.random() * Math.PI * 2;
                     const phi = Math.acos(2 * Math.random() - 1);
@@ -524,11 +444,10 @@
             particleGeo.attributes.color.needsUpdate = true;
         }
 
-        // --- 动画循环 ---
         function animate() {
             requestAnimationFrame(animate);
 
-            // 音频分析
+            // Audio Analysis
             let bass = 0, treble = 0;
             if (isPlaying && audioAnalyser) {
                 audioAnalyser.getByteFrequencyData(dataArray);
@@ -542,89 +461,88 @@
             const positionsArray = particleGeo.attributes.position.array;
             const colorsArray = particleGeo.attributes.color.array;
             
-            // 基础呼吸律动
             const breath = Math.sin(time * config.breathRate) * 0.05 + 1;
             const bassImpact = bass * config.bassSensitivity;
             const trebleImpact = treble * config.trebleSensitivity;
 
-            // 实时调节
-            particles.material.size = config.particleSize * (1 + bassImpact * 0.2); 
+            // Global Material Props
+            particles.material.size = config.particleSize;
             particles.material.opacity = config.particleOpacity;
             const customColor = new THREE.Color(config.themeColor);
 
-            // --- 物理模拟 ---
             if (config.shape === 'nebula') {
                 // ==========================================
-                // NEBULA 物理逻辑 (流场 + 呼吸)
+                // SINGULARITY PHYSICS (循环爆炸)
                 // ==========================================
                 
-                // Flow Field 参数
-                const flowScale = 0.05; // 噪声频率
-                const flowSpeed = time * config.flowSpeed * config.flowDirection * 0.5;
-                
+                const maxDist = 80; // 视界消失点
+                const speedBase = 0.1 * config.flowSpeed;
+
                 for (let i = 0; i < config.particleCount; i++) {
                     const idx = i * 3;
                     
-                    // 1. 获取目标基础位置 (团块中心)
-                    const tx = targets[idx];
-                    const ty = targets[idx+1];
-                    const tz = targets[idx+2];
-                    
-                    // 2. 计算 Perlin Noise Flow (伪)
-                    // 使用位置本身作为噪声种子，产生连贯的流场
-                    const nx = tx * flowScale;
-                    const ny = ty * flowScale;
-                    const nz = tz * flowScale;
-                    
-                    // 简单的三角函数流场模拟 "invisible airflow"
-                    // 极慢的有机漂移 (Organic Slow-motion Drift)
-                    const driftX = Math.sin(ny + flowSpeed) * Math.cos(nz + flowSpeed) * 5.0;
-                    const driftY = Math.cos(nx + flowSpeed) * Math.sin(nz + flowSpeed) * 5.0;
-                    const driftZ = Math.sin(nx + flowSpeed) * Math.cos(ny + flowSpeed) * 5.0;
-                    
-                    // 3. 呼吸律动 (Meditative Breathing)
-                    // 让粒子相对于原点有一个缓慢的膨胀收缩
-                    const breatheFactor = breath + (bassImpact * 0.1); // 低音加强呼吸
-                    
-                    const finalX = (tx + driftX) * breatheFactor;
-                    const finalY = (ty + driftY) * breatheFactor;
-                    const finalZ = (tz + driftZ) * breatheFactor;
-                    
-                    // 4. Lerp 更新位置 (平滑过渡)
-                    positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], finalX, 0.03);
-                    positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], finalY, 0.03);
-                    positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], finalZ, 0.03);
+                    // 1. 推进生命周期 (距离)
+                    // Gold 跑得快，Cyan 跑得慢
+                    let typeSpeed = 1.0;
+                    if(types[i]===0) typeSpeed = 1.5; // Gold
+                    else if(types[i]===2) typeSpeed = 0.7; // Cyan mist
 
-                    // 5. 颜色更新 (Bioluminescent Flare)
+                    // 核心运动：沿径向向外
+                    let currentDist = lifeData[i];
+                    currentDist += speedBase * typeSpeed * (1 + bassImpact * 0.5); // 低音加速爆炸
+                    
+                    // 2. 循环重置 (Reset to Singularity)
+                    if (currentDist > maxDist) {
+                        currentDist = Math.random() * 5; // 回到中心
+                    }
+                    lifeData[i] = currentDist;
+
+                    // 3. 计算位置：方向 * 距离
+                    const nx = initialPositions[idx]; // 这里存的是带随机的方向向量
+                    const ny = initialPositions[idx+1];
+                    const nz = initialPositions[idx+2];
+                    
+                    // 4. 冲击波涟漪 (Shockwave Ripple)
+                    // 在线性距离上叠加一个正弦波，波随时间向外推
+                    // sin(distance - time)
+                    const ripple = Math.sin(currentDist * 0.2 - time * 2.0) * (bassImpact * 2.0);
+                    const finalDist = currentDist + ripple;
+
+                    positionsArray[idx] = nx * finalDist;
+                    positionsArray[idx+1] = ny * finalDist;
+                    positionsArray[idx+2] = nz * finalDist;
+
+                    // 5. 颜色与消融 (Dissolving)
                     if (config.useDynamicColor) {
-                        // 基础色
                         let r = colorAttributes[idx];
                         let g = colorAttributes[idx+1];
                         let b = colorAttributes[idx+2];
                         
-                        // 高音闪烁：增加亮度 (Luminous Bloom)
-                        // 让颜色向白色偏移
-                        r += trebleImpact * 0.6;
-                        g += trebleImpact * 0.6;
-                        b += trebleImpact * 0.6;
+                        // 中心极亮 (White burst)
+                        const centerIntensity = Math.max(0, 10 - currentDist) / 10;
+                        r += centerIntensity; g += centerIntensity; b += centerIntensity;
+
+                        // 边缘消融 (Fade out at horizon)
+                        const fade = 1.0 - Math.pow(currentDist / maxDist, 2); // 指数衰减
                         
-                        colorsArray[idx] = Math.min(r, 1);
-                        colorsArray[idx+1] = Math.min(g, 1);
-                        colorsArray[idx+2] = Math.min(b, 1);
+                        // Treble Flash
+                        r += trebleImpact * 0.3; g += trebleImpact * 0.3; b += trebleImpact * 0.3;
+                        
+                        // 应用 Fade 到颜色亮度 (模拟透明度，因为Points不支持单点透明)
+                        colorsArray[idx] = r * fade;
+                        colorsArray[idx+1] = g * fade;
+                        colorsArray[idx+2] = b * fade;
                     } else {
-                        // 如果用户强制改色
-                        colorsArray[idx] = customColor.r + trebleImpact;
-                        colorsArray[idx+1] = customColor.g + trebleImpact;
-                        colorsArray[idx+2] = customColor.b + trebleImpact;
+                        colorsArray[idx] = customColor.r; colorsArray[idx+1] = customColor.g; colorsArray[idx+2] = customColor.b;
                     }
                 }
                 
-                // 极慢的整体旋转，模拟宇宙自转
-                particles.rotation.y = time * 0.01 * config.flowDirection;
+                // 极慢的整体漂移
+                particles.rotation.y = time * 0.05 * config.rotationSpeed;
 
             } 
             else if (config.shape === 'origin') {
-                // ORIGIN LOGIC
+                // ORIGIN
                 for (let i = 0; i < config.particleCount; i++) {
                     const idx = i * 3;
                     if (types[i] === 0) { // Core
@@ -634,12 +552,9 @@
                         const liquidTime = time * config.flowSpeed * config.flowDirection;
                         const displacement = (Math.sin(nx * noiseFreq + liquidTime) * Math.cos(ny * noiseFreq + liquidTime) + Math.sin(ny * 3 - liquidTime) * 0.5) * 3.0; 
                         const finalDisp = displacement + (bassImpact * 2.0);
-                        
                         if (config.useDynamicColor) {
                             const heat = displacement / 3.0; 
-                            let r = 1.0 + trebleImpact * 0.5; 
-                            let g = 0.8 + heat * 0.2 + trebleImpact * 0.5; 
-                            let b = 0.0 + heat * 0.4 + trebleImpact; 
+                            let r = 1.0 + trebleImpact * 0.5; let g = 0.8 + heat * 0.2 + trebleImpact * 0.5; let b = 0.0 + heat * 0.4 + trebleImpact; 
                             colorsArray[idx] = Math.min(r, 1); colorsArray[idx+1] = Math.min(g, 1); colorsArray[idx+2] = Math.min(b, 1);
                         } else {
                             colorsArray[idx] = customColor.r + trebleImpact; colorsArray[idx+1] = customColor.g + trebleImpact; colorsArray[idx+2] = customColor.b + trebleImpact;
@@ -668,7 +583,7 @@
                 particles.rotation.y += config.rotationSpeed * config.flowDirection;
             } 
             else if (config.shape === 'zen') {
-                // ZEN LOGIC
+                // ZEN
                 const rippleSpeed = time * 0.8 * config.flowSpeed * config.flowDirection;
                 for (let i = 0; i < config.particleCount; i++) {
                     const idx = i * 3;
@@ -703,9 +618,7 @@
                 const moveSpeed = 0.05;
                 for (let i = 0; i < config.particleCount; i++) {
                     const idx = i * 3;
-                    colorsArray[idx] = customColor.r + (Math.random()-0.5)*trebleImpact;
-                    colorsArray[idx+1] = customColor.g + (Math.random()-0.5)*trebleImpact;
-                    colorsArray[idx+2] = customColor.b + (Math.random()-0.5)*trebleImpact;
+                    colorsArray[idx] = customColor.r; colorsArray[idx+1] = customColor.g; colorsArray[idx+2] = customColor.b;
                     positionsArray[idx] += (targets[idx] - positionsArray[idx]) * moveSpeed;
                     positionsArray[idx+1] += (targets[idx+1] - positionsArray[idx+1]) * moveSpeed;
                     positionsArray[idx+2] += (targets[idx+2] - positionsArray[idx+2]) * moveSpeed;
@@ -723,8 +636,11 @@
             gui = new GUI({ title: 'VISUALIZER PANEL' });
             
             const folderScene = gui.addFolder('Theme & Form');
-            // 将 galaxy 替换为 nebula
-            folderScene.add(config, 'shape', ['origin', 'zen', 'nebula', 'sphere']).name('Mode').onChange(val => calculateShape(val));
+            // Nebula 选项保留ID，但UI显示 Singularity
+            folderScene.add(config, 'shape', ['origin', 'zen', 'nebula', 'sphere'])
+                       .name('Mode')
+                       .onChange(val => calculateShape(val));
+                       
             folderScene.add(config, 'useDynamicColor').name('Auto Color');
             folderScene.addColor(config, 'themeColor').name('Manual Color');
 
@@ -733,18 +649,16 @@
             folderParticles.add(config, 'particleOpacity', 0.1, 1.0).name('Opacity');
             
             const folderMotion = gui.addFolder('Motion Dynamics');
-            folderMotion.add(config, 'flowSpeed', 0, 1.0).name('Drift Speed');
-            folderMotion.add(config, 'rotationSpeed', 0, 0.02).name('Spin Speed');
-            folderMotion.add(config, 'flowDirection', { Forward: 1, Backward: -1 }).name('Flow Dir');
+            folderMotion.add(config, 'flowSpeed', 0, 1.0).name('Time Scale');
+            folderMotion.add(config, 'rotationSpeed', 0, 0.02).name('Spin');
             
             const folderAudio = gui.addFolder('Audio Response');
-            folderAudio.add(config, 'bassSensitivity', 0, 3.0).name('Bass (Pulse)');
+            folderAudio.add(config, 'bassSensitivity', 0, 3.0).name('Bass (Shockwave)');
             folderAudio.add(config, 'trebleSensitivity', 0, 3.0).name('Treble (Flash)');
 
             const folderFX = gui.addFolder('Post-Processing');
             folderFX.add(config, 'bloomStrength', 0, 3.0).name('Glow Intensity').onChange(v => bloomPass.strength = v);
-            folderFX.add(config, 'breathRate', 0, 2.0).name('Breath Rate');
-
+            
             if(window.innerWidth > 600) {
                 folderScene.open();
                 folderAudio.open();
@@ -765,7 +679,6 @@
             }
         }
 
-        // --- Audio & Events (Same as before) ---
         uploadBtn.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -815,21 +728,14 @@
             if(isPlaying) { audioContext.suspend(); isPlaying=false; playBtn.innerText="Resume"; }
             else { audioContext.resume(); isPlaying=true; playBtn.innerText="Pause"; }
         });
-
-        progressBar.addEventListener('input', (e) => {
-            if(audioBuffer) playAudio((e.target.value/100)*audioDuration);
-        });
-        
+        progressBar.addEventListener('input', (e) => { if(audioBuffer) playAudio((e.target.value/100)*audioDuration); });
         function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            composer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight); composer.setSize(window.innerWidth, window.innerHeight);
         }
         function updateClock() { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }
         document.getElementById('fullscreen-btn').addEventListener('click', () => {
-            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-            else document.exitFullscreen();
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen();
         });
 
         init();
