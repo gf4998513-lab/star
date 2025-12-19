@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DAVID MUSIC - Tri-Color Soul Visualizer</title>
+    <title>DAVID MUSIC - Tri-Color Visualizer</title>
     <style>
         /* --- 全局样式 --- */
         body, html {
@@ -115,7 +115,7 @@
 
     <div id="player-controls">
         <div class="song-info" id="current-song">No Audio Data</div>
-        <div class="artist-name">Upload to Generate ID</div>
+        <div class="artist-name">Upload to Generate Shape</div>
         
         <div class="control-row">
             <button id="btn-upload">UPLOAD MP3</button>
@@ -162,10 +162,11 @@
             particleSize: 0.9,    
             particleOpacity: 0.9, 
             
-            // --- 新增：三色混合系统 ---
-            color1: '#ffffff', // 颜色1 (Top / Core)
-            color2: '#8899aa', // 颜色2 (Mid / Body)
-            color3: '#334455', // 颜色3 (Bottom / Edge)
+            // --- 三色系统 ---
+            colorA: '#ffffff', // Top / Core / High
+            colorB: '#8899aa', // Mid / Body / Mid
+            colorC: '#334455', // Bot / Edge / Low
+            mixMode: 'Structural', // Structural, Linear, Random
             
             useDynamicColor: true, 
             
@@ -224,7 +225,6 @@
         }
         rng = new SeededRandom(12345);
 
-        // UI
         const titleEl = document.getElementById('header-title');
         const songTitleEl = document.getElementById('current-song');
         const timeDisplay = document.getElementById('time-display');
@@ -289,7 +289,6 @@
             lifeData = new Float32Array(config.particleCount);
             uvData = new Float32Array(config.particleCount * 2);
 
-            // 初始占位颜色
             for (let i = 0; i < config.particleCount; i++) {
                 positions[i * 3] = (Math.random() - 0.5) * 100;
                 positions[i * 3 + 1] = (Math.random() - 0.5) * 100;
@@ -331,19 +330,71 @@
             return tex;
         }
 
-        // --- 辅助：获取混合颜色 ---
-        // ratio: 0.0 ~ 1.0
-        function getMixedColor(ratio) {
-            const c1 = new THREE.Color(config.color1);
-            const c2 = new THREE.Color(config.color2);
-            const c3 = new THREE.Color(config.color3);
-            
-            // 0.0 -> 0.5 : Mix C1 & C2
-            // 0.5 -> 1.0 : Mix C2 & C3
-            if (ratio < 0.5) {
-                return c1.lerp(c2, ratio * 2);
-            } else {
-                return c2.lerp(c3, (ratio - 0.5) * 2);
+        // --- 色彩混合辅助函数 ---
+        function applyColorsToBuffer() {
+            // 根据 mixMode 和 shape 逻辑重新填充 colorAttributes
+            const count = config.particleCount;
+            const cA = new THREE.Color(config.colorA);
+            const cB = new THREE.Color(config.colorB);
+            const cC = new THREE.Color(config.colorC);
+
+            for(let i=0; i<count; i++) {
+                const idx = i*3;
+                let targetColor = new THREE.Color();
+                let ratio = 0;
+
+                if (config.mixMode === 'Random') {
+                    // 随机混合
+                    ratio = Math.random();
+                    if(ratio < 0.33) targetColor.copy(cA);
+                    else if(ratio < 0.66) targetColor.copy(cB);
+                    else targetColor.copy(cC);
+                } 
+                else if (config.mixMode === 'Linear') {
+                    // 线性混合 (基于 Index)
+                    ratio = i / count;
+                    if(ratio < 0.5) targetColor.copy(cA).lerp(cB, ratio * 2);
+                    else targetColor.copy(cB).lerp(cC, (ratio-0.5)*2);
+                } 
+                else { // Structural (Default)
+                    // 基于形状的逻辑
+                    if(config.shape === 'cumulus') {
+                        // 高度决定颜色: A(Top) -> B(Mid) -> C(Bot)
+                        const y = targets[idx+1];
+                        const h = Math.max(0, y+10) / 40; // 归一化高度
+                        if(h > 0.6) targetColor.copy(cA).lerp(cB, (1-h)*2);
+                        else targetColor.copy(cB).lerp(cC, (0.6-h)*2);
+                        // 自遮蔽叠加
+                        const shade = colorAttributes[idx]; // 复用之前算的AO亮度
+                        targetColor.multiplyScalar(shade); 
+                    } 
+                    else if(config.shape === 'nebula') {
+                        // 类型决定颜色: Type0->A, Type1->B, Type2->C
+                        if(types[i] === 0) targetColor.copy(cA);
+                        else if(types[i] === 1) targetColor.copy(cB);
+                        else targetColor.copy(cC);
+                    }
+                    else if(config.shape === 'origin') {
+                        // Core->A, Grid->C
+                        if(types[i] === 0) targetColor.copy(cA).lerp(cB, Math.random()*0.5);
+                        else targetColor.copy(cC);
+                    }
+                    else if(config.shape === 'zen') {
+                        // Core->A, Ripple->C
+                        if(types[i] === 0) targetColor.copy(cA);
+                        else targetColor.copy(cC);
+                    }
+                    else { // Unique / Generic
+                        ratio = Math.random();
+                        if(ratio < 0.5) targetColor.copy(cA).lerp(cB, ratio * 2);
+                        else targetColor.copy(cB).lerp(cC, (ratio-0.5)*2);
+                    }
+                }
+
+                // 更新 Buffer (但不覆盖实时渲染的数组，只更新基准色)
+                colorAttributes[idx] = targetColor.r;
+                colorAttributes[idx+1] = targetColor.g;
+                colorAttributes[idx+2] = targetColor.b;
             }
         }
 
@@ -353,70 +404,49 @@
             const count = config.particleCount;
             let idx = 0;
 
-            // UI Feedback
-            if(type === 'unique') {
-                titleEl.style.backgroundImage = `linear-gradient(135deg, ${config.color1}, ${config.color2})`;
-                particles.material.blending = THREE.AdditiveBlending;
-                particles.material.opacity = 0.7;
-            } else if(type === 'cumulus') {
-                titleEl.style.backgroundImage = 'linear-gradient(180deg, #ffffff, #667788)';
-                particles.material.blending = THREE.NormalBlending; 
-                particles.material.opacity = 0.9;
-            } else {
-                particles.material.blending = THREE.AdditiveBlending;
-                particles.material.opacity = 0.6;
-                titleEl.style.backgroundImage = `linear-gradient(135deg, ${config.color1}, ${config.color3})`;
+            // 1. 设置默认颜色 (如果不是刚刚手动调过)
+            // 这里我们只在切换模式时“重置”颜色，模拟“自带初始状态”
+            if(type === 'cumulus') {
+                config.colorA = '#ffffff'; config.colorB = '#8899aa'; config.colorC = '#334455';
+                particles.material.blending = THREE.NormalBlending; particles.material.opacity = 0.9;
+            } else if (type === 'nebula') {
+                config.colorA = '#ffaa00'; config.colorB = '#ff00ff'; config.colorC = '#00ffff'; // Gold, Magenta, Cyan
+                particles.material.blending = THREE.AdditiveBlending; particles.material.opacity = 0.6;
+            } else if (type === 'origin') {
+                config.colorA = '#ffffff'; config.colorB = '#ffaa00'; config.colorC = '#550000';
+                particles.material.blending = THREE.AdditiveBlending; particles.material.opacity = 0.6;
+            } else if (type === 'zen') {
+                config.colorA = '#ffffff'; config.colorB = '#888888'; config.colorC = '#000000';
+                particles.material.blending = THREE.NormalBlending; particles.material.opacity = 0.8;
+            } else if (type === 'unique') {
+                // Unique 颜色由 Hash 决定
+                const rng = new SeededRandom(songHash);
+                const h = Math.floor(rng.next()*360);
+                config.colorA = new THREE.Color(`hsl(${h}, 90%, 70%)`).getHexString();
+                config.colorB = new THREE.Color(`hsl(${(h+40)%360}, 80%, 60%)`).getHexString();
+                config.colorC = new THREE.Color(`hsl(${(h+180)%360}, 80%, 40%)`).getHexString();
+                particles.material.blending = THREE.AdditiveBlending; particles.material.opacity = 0.7;
             }
+            updateGUIColor(); // 同步 UI 显示
 
-            // --- UNIQUE MODE ---
+            // 2. 更新背景标题渐变
+            titleEl.style.backgroundImage = `linear-gradient(135deg, ${config.colorA}, ${config.colorB})`;
+
+            // 3. 计算位置 (保持原样)
             if (type === 'unique') {
                 rng = new SeededRandom(songHash);
                 const shapeVariant = Math.floor(rng.next() * 3); 
-                const paramA = rng.range(2, 12);
-                const paramB = rng.range(2, 12);
-                
-                // 为 Unique 模式自动生成颜色 (如果刚上传了歌)
-                // 这里我们不强制覆盖config，除非是上传事件触发的更新
-                // 但为了保持逻辑，我们假设 Unique 模式下使用 config 的颜色，
-                // 上传时会更新 config 的颜色。
-
+                const paramA = rng.range(2, 12); const paramB = rng.range(2, 12);
                 for (let i = 0; i < count; i++) {
                     let x, y, z;
-                    const u = Math.random() * Math.PI * 2;
-                    const v = Math.random() * Math.PI;
-
-                    if (shapeVariant === 0) { // Harmonic
-                        const r = 25 + Math.sin(paramA * u) * Math.cos(paramB * v) * 5;
-                        x = r * Math.sin(v) * Math.cos(u);
-                        y = r * Math.sin(v) * Math.sin(u);
-                        z = r * Math.cos(v);
-                    } else if (shapeVariant === 1) { // Twisted
-                        const R = 20, r = 8;
-                        const p = Math.floor(paramA), q = Math.floor(paramB);
-                        x = (R + r * Math.cos(p * u)) * Math.cos(q * u);
-                        y = (R + r * Math.cos(p * u)) * Math.sin(q * u);
-                        z = r * Math.sin(p * u) * 2.0;
-                    } else { // Chaos
-                        const r = 30 * Math.pow(Math.random(), 0.5);
-                        const deform = Math.sin(u * paramA) * 5;
-                        x = (r + deform) * Math.sin(v) * Math.cos(u);
-                        y = (r + deform) * Math.sin(v) * Math.sin(u);
-                        z = (r + deform) * Math.cos(v);
-                    }
-
-                    targets[idx] = x; targets[idx+1] = y; targets[idx+2] = z;
-                    initialPositions[idx] = x; initialPositions[idx+1] = y; initialPositions[idx+2] = z;
-                    
-                    // Color Mixing based on index/random
-                    const mixRatio = Math.random();
-                    const col = getMixedColor(mixRatio);
-                    colorAttributes[idx] = col.r; colorAttributes[idx+1] = col.g; colorAttributes[idx+2] = col.b;
-                    
-                    lifeData[i] = Math.random(); 
-                    idx += 3;
+                    const u = Math.random() * Math.PI * 2; const v = Math.random() * Math.PI;
+                    if (shapeVariant === 0) { const r = 25 + Math.sin(paramA * u) * Math.cos(paramB * v) * 5; x = r * Math.sin(v) * Math.cos(u); y = r * Math.sin(v) * Math.sin(u); z = r * Math.cos(v); } 
+                    else if (shapeVariant === 1) { const R = 20, r = 8; const p = Math.floor(paramA), q = Math.floor(paramB); x = (R + r * Math.cos(p * u)) * Math.cos(q * u); y = (R + r * Math.cos(p * u)) * Math.sin(q * u); z = r * Math.sin(p * u) * 2.0; } 
+                    else { const r = 30 * Math.pow(Math.random(), 0.5); const deform = Math.sin(u * paramA) * 5; x = (r + deform) * Math.sin(v) * Math.cos(u); y = (r + deform) * Math.sin(v) * Math.sin(u); z = (r + deform) * Math.cos(v); }
+                    targets[idx] = x; targets[idx+1] = y; targets[idx+2] = z; initialPositions[idx] = x; initialPositions[idx+1] = y; initialPositions[idx+2] = z;
+                    lifeData[i] = Math.random(); idx += 3;
                 }
             }
-            // --- CUMULUS MODE ---
             else if (type === 'cumulus') { 
                 const blobs = [{x:0, y:8, z:0, r:16}, {x:12, y:10, z:5, r:11}, {x:-12, y:9, z:5, r:11}, {x:6, y:15, z:-8, r:10}, {x:-6, y:14, z:-6, r:10}, {x:0, y:20, z:0, r:8}];
                 const dropParticleCount = Math.floor(count * 0.3); const bodyCount = count - dropParticleCount;
@@ -426,74 +456,41 @@
                     let x = blob.x + r * Math.sin(phi) * Math.cos(theta); let y = blob.y + r * Math.sin(phi) * Math.sin(theta); let z = blob.z + r * Math.cos(phi);
                     if (y < 0) { y = (Math.random() - 0.5) * 0.5; x *= 1.1; z *= 1.1; }
                     targets[idx] = x; targets[idx+1] = y; targets[idx+2] = z; initialPositions[idx] = x; initialPositions[idx+1] = y; initialPositions[idx+2] = z;
-                    
-                    // Cumulus Mixing: Height based mixing
-                    // Top (1.0) -> Color 1, Mid -> Color 2, Bottom/Shadow -> Color 3
-                    // Also multiply by shade for AO
-                    const heightNorm = Math.max(0, y) / 28; // 0 to 1
-                    const distNorm = Math.sqrt(x*x + z*z) / 22;
+                    // Pre-calculate shading factor for color mixing
+                    const heightNorm = Math.max(0, y) / 28; const distNorm = Math.sqrt(x*x + z*z) / 22;
                     let shade = 0.1 + heightNorm * 0.9; shade -= (1.0 - distNorm) * 0.2; if(y < 2) shade = 0.15; shade = Math.max(0.05, Math.min(1.0, shade));
-                    
-                    const baseCol = getMixedColor(1.0 - heightNorm); // High Y -> ratio 0 (Color1), Low Y -> ratio 1 (Color3)
-                    
-                    colorAttributes[idx] = baseCol.r * shade; 
-                    colorAttributes[idx+1] = baseCol.g * shade; 
-                    colorAttributes[idx+2] = baseCol.b * shade; 
-                    idx += 3;
+                    // Store shade temporarily in colorAttributes (will be overwritten by applyColors)
+                    colorAttributes[idx] = shade; idx += 3;
                 }
                 const perClump = Math.floor(dropParticleCount / CLUMP_COUNT);
                 for (let c = 0; c < CLUMP_COUNT; c++) {
                     for (let k = 0; k < perClump; k++) {
                         const i = bodyCount + c * perClump + k; if (i >= count) break;
                         types[i] = 1; clumpIDs[i] = c;
-                        const clumpScale = clumpOrigins[c].scale; const r = 3.5 * clumpScale * Math.pow(Math.random(), 0.3); 
-                        const theta = Math.random() * Math.PI * 2; const phi = Math.acos(2 * Math.random() - 1);
+                        const clumpScale = clumpOrigins[c].scale; const r = 3.5 * clumpScale * Math.pow(Math.random(), 0.3); const theta = Math.random() * Math.PI * 2; const phi = Math.acos(2 * Math.random() - 1);
                         localCoords[i*3] = r * Math.sin(phi) * Math.cos(theta); localCoords[i*3+1] = r * Math.sin(phi) * Math.sin(theta); localCoords[i*3+2] = r * Math.cos(phi);
-                        
-                        // Falling clumps are usually Color 3 (dark/heavy)
-                        const col = new THREE.Color(config.color3);
-                        colorAttributes[i*3] = col.r * 0.6; 
-                        colorAttributes[i*3+1] = col.g * 0.6; 
-                        colorAttributes[i*3+2] = col.b * 0.6;
+                        // Shade for clumps
+                        colorAttributes[i*3] = 0.5; // Flat shade
                     }
                 }
             } 
-            // --- NEBULA MODE ---
             else if (type === 'nebula') {
-                const maxDist=80; 
-                for(let i=0; i<count; i++) {
-                    const rand=Math.random(); 
-                    let pType=2; if(rand<0.3) pType=0; else if(rand<0.65) pType=1; 
-                    types[i]=pType;
-                    const theta=Math.random()*Math.PI*2; const phi=Math.acos(2*Math.random()-1);
-                    const nx=Math.sin(phi)*Math.cos(theta); const ny=Math.sin(phi)*Math.sin(theta); const nz=Math.cos(phi);
+                const maxDist=80; for(let i=0; i<count; i++) {
+                    const rand=Math.random(); let pType=2; if(rand<0.3) pType=0; else if(rand<0.65) pType=1; types[i]=pType;
+                    const theta=Math.random()*Math.PI*2; const phi=Math.acos(2*Math.random()-1); const nx=Math.sin(phi)*Math.cos(theta); const ny=Math.sin(phi)*Math.sin(theta); const nz=Math.cos(phi);
                     const speedVar=0.5+Math.random()*0.5; initialPositions[idx]=nx*speedVar; initialPositions[idx+1]=ny*speedVar; initialPositions[idx+2]=nz*speedVar;
                     const startDist=Math.random()*60; targets[idx]=nx*startDist; targets[idx+1]=ny*startDist; targets[idx+2]=nz*startDist; lifeData[i]=startDist;
-                    
-                    // Map types to 3 colors
-                    let col;
-                    if(pType===0) col = new THREE.Color(config.color1); // Core
-                    else if(pType===1) col = new THREE.Color(config.color2); // Shockwave
-                    else col = new THREE.Color(config.color3); // Mist
-                    
-                    colorAttributes[idx]=col.r; colorAttributes[idx+1]=col.g; colorAttributes[idx+2]=col.b;
                     idx+=3;
                 }
-            } 
-            // --- ORIGIN / ZEN ---
-            else {
-                for (let i = 0; i < count; i++) {
-                    const r = 30 * Math.cbrt(Math.random()); const theta = Math.random() * Math.PI * 2; const phi = Math.acos(2 * Math.random() - 1);
-                    targets[idx] = r*Math.sin(phi)*Math.cos(theta); targets[idx+1] = r*Math.sin(phi)*Math.sin(theta); targets[idx+2] = r*Math.cos(phi);
-                    
-                    // Gradient mix based on Y position or Index
-                    const mix = (i / count);
-                    const col = getMixedColor(mix);
-                    colorAttributes[idx] = col.r; colorAttributes[idx+1] = col.g; colorAttributes[idx+2] = col.b;
-                    idx += 3;
-                }
+            } else if (type === 'origin') {
+                 const coreCount = Math.floor(count * 0.55); const goldenRatio = (1 + Math.sqrt(5)) / 2; for (let i = 0; i < coreCount; i++) { types[i]=0; const theta=2*Math.PI*i/goldenRatio; const phi=Math.acos(1-2*(i+0.5)/coreCount); const r=12; targets[idx]=r*Math.sin(phi)*Math.cos(theta); targets[idx+1]=r*Math.sin(phi)*Math.sin(theta); targets[idx+2]=r*Math.cos(phi); initialPositions[idx]=Math.sin(phi)*Math.cos(theta); initialPositions[idx+1]=Math.sin(phi)*Math.sin(theta); initialPositions[idx+2]=Math.cos(phi); idx+=3; } const latLines=24; const lonLines=36; for (let i = coreCount; i < count; i++) { types[i]=1; const relativeI=i-coreCount; const isLat=relativeI%2===0; let u,v,radius=35+Math.random()*2; if(isLat){const lineIdx=Math.floor((relativeI/2)/((count-coreCount)/2/latLines)); v=(lineIdx/latLines)*Math.PI; u=(relativeI%100)/100*Math.PI*2;}else{const lineIdx=Math.floor((relativeI/2)/((count-coreCount)/2/lonLines)); u=(lineIdx/lonLines)*Math.PI*2; v=(relativeI%100)/100*Math.PI;} targets[idx]=radius*Math.sin(v)*Math.cos(u); targets[idx+1]=radius*Math.sin(v)*Math.sin(u); targets[idx+2]=radius*Math.cos(v); uvData[i*2]=u; uvData[i*2+1]=v; idx+=3; }
+            } else if (type === 'zen') {
+                 for (let i=0; i<count; i++) { if(i<count*0.5){types[i]=0; const r=13*Math.cbrt(Math.random()); const theta=Math.acos(2*Math.random()-1); const phi=Math.random()*Math.PI*2; targets[idx]=r*Math.sin(theta)*Math.cos(phi); targets[idx+1]=r*Math.sin(theta)*Math.sin(phi); targets[idx+2]=r*Math.cos(theta);} else{types[i]=1; const rBase=18+Math.random()*45; const angle=Math.random()*Math.PI*2; initialPositions[idx]=rBase*Math.cos(angle); initialPositions[idx+1]=0; initialPositions[idx+2]=rBase*Math.sin(angle); targets[idx]=initialPositions[idx]; targets[idx+1]=0; targets[idx+2]=initialPositions[idx+2];} idx+=3; }
             }
             
+            // 4. 应用颜色 (混合逻辑)
+            applyColorsToBuffer();
+
             particleGeo.attributes.position.needsUpdate = true;
             particleGeo.attributes.color.needsUpdate = true;
         }
@@ -519,29 +516,33 @@
             particles.material.size = config.particleSize;
             particles.material.opacity = config.particleOpacity;
 
-            if (config.shape === 'unique') {
-                const motionSpeed = 0.5 + (songHash % 10) * 0.1;
-                for (let i = 0; i < config.particleCount; i++) {
-                    const idx = i * 3;
-                    const tx = targets[idx], ty = targets[idx+1], tz = targets[idx+2];
-                    const offset = lifeData[i];
-                    
-                    const pulse = 1.0 + bassImpact * 0.3 * Math.sin(lifeData[i] * 10 + time);
-                    const noise = Math.sin(ty * 0.1 + time * motionSpeed) * trebleImpact;
-
-                    positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], tx * pulse + noise, 0.1);
-                    positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], ty * pulse, 0.1);
-                    positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], tz * pulse - noise, 0.1);
-
-                    if(trebleImpact > 0.1) {
-                        colorsArray[idx] = Math.min(1, colorAttributes[idx] + trebleImpact * 0.5);
-                        colorsArray[idx+1] = Math.min(1, colorAttributes[idx+1] + trebleImpact * 0.5);
-                        colorsArray[idx+2] = Math.min(1, colorAttributes[idx+2] + trebleImpact * 0.5);
+            // Apply base color from buffer + Audio Reactivity
+            for (let i = 0; i < config.particleCount; i++) {
+                const idx = i * 3;
+                
+                // Color = Base Color (from applyColorsToBuffer) + Treble Flash
+                if (config.useDynamicColor) {
+                    if (trebleImpact > 0.1) {
+                        colorsArray[idx] = Math.min(1, colorAttributes[idx] + trebleImpact * 0.4);
+                        colorsArray[idx+1] = Math.min(1, colorAttributes[idx+1] + trebleImpact * 0.4);
+                        colorsArray[idx+2] = Math.min(1, colorAttributes[idx+2] + trebleImpact * 0.4);
                     } else {
                         colorsArray[idx] = colorAttributes[idx];
                         colorsArray[idx+1] = colorAttributes[idx+1];
                         colorsArray[idx+2] = colorAttributes[idx+2];
                     }
+                }
+            }
+
+            if (config.shape === 'unique') {
+                const motionSpeed = 0.5 + (songHash % 10) * 0.1;
+                for (let i = 0; i < config.particleCount; i++) {
+                    const idx = i * 3; const tx = targets[idx], ty = targets[idx+1], tz = targets[idx+2];
+                    const pulse = 1.0 + bassImpact * 0.3 * Math.sin(lifeData[i] * 10 + time);
+                    const noise = Math.sin(ty * 0.1 + time * motionSpeed) * trebleImpact;
+                    positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], tx * pulse + noise, 0.1);
+                    positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], ty * pulse, 0.1);
+                    positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], tz * pulse - noise, 0.1);
                 }
                 particles.rotation.y += config.rotationSpeed * (1 + bassImpact);
 
@@ -556,13 +557,6 @@
                         positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], targets[idx] * (1+(scale-1)*yFactor*0.3), 0.1);
                         positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], targets[idx+1] * scale, 0.1);
                         positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], targets[idx+2] * (1+(scale-1)*yFactor*0.3), 0.1);
-                        
-                        // Apply Color Mix with Shading
-                        if(config.useDynamicColor) {
-                            colorsArray[idx] = colorAttributes[idx] + trebleImpact*0.1;
-                            colorsArray[idx+1] = colorAttributes[idx+1] + trebleImpact*0.1;
-                            colorsArray[idx+2] = colorAttributes[idx+2] + trebleImpact*0.1;
-                        }
                     } else if (type === 1) {
                         const cid = clumpIDs[i]; const origin = clumpOrigins[cid];
                         const t = (time + origin.phase) % DROP_CYCLE_DURATION; 
@@ -575,38 +569,26 @@
                         let alpha = 1.0; if (t < 0.5) alpha = t * 2.0; if (currentY < -80) alpha = 0;
                         const shake = (Math.random()-0.5) * bassImpact * 0.2;
                         positionsArray[idx] = origin.x + finalLx + shake; positionsArray[idx+1] = currentY + finalLy; positionsArray[idx+2] = origin.z + finalLz + shake;
-                        if(config.useDynamicColor) { colorsArray[idx] = colorAttributes[idx] * alpha; colorsArray[idx+1] = colorAttributes[idx+1] * alpha; colorsArray[idx+2] = colorAttributes[idx+2] * alpha; }
+                        
+                        // Fade Clump Color based on Alpha
+                        if(config.useDynamicColor) {
+                            colorsArray[idx] *= alpha; colorsArray[idx+1] *= alpha; colorsArray[idx+2] *= alpha;
+                        }
                     }
                 }
                 particles.rotation.y = time * 0.01 * config.rotationSpeed;
 
             } else if (config.shape === 'nebula') {
-                const maxDist=80; const speedBase=0.1*config.flowSpeed;
-                for(let i=0; i<config.particleCount; i++) {
-                    const idx=i*3; let typeSpeed=1.0; if(types[i]===0)typeSpeed=1.5; else if(types[i]===2)typeSpeed=0.7;
-                    let currentDist=lifeData[i]; currentDist+=speedBase*typeSpeed*(1+bassImpact*0.5);
-                    if(currentDist>maxDist)currentDist=Math.random()*5; lifeData[i]=currentDist;
-                    const nx=initialPositions[idx]; const ny=initialPositions[idx+1]; const nz=initialPositions[idx+2];
-                    const ripple=Math.sin(currentDist*0.2-time*2.0)*(bassImpact*2.0); const finalDist=currentDist+ripple;
-                    positionsArray[idx]=nx*finalDist; positionsArray[idx+1]=ny*finalDist; positionsArray[idx+2]=nz*finalDist;
-                    if(config.useDynamicColor){
-                        let r=colorAttributes[idx]; let g=colorAttributes[idx+1]; let b=colorAttributes[idx+2];
-                        const centerIntensity=Math.max(0,10-currentDist)/10; const fade=1.0-Math.pow(currentDist/maxDist,2);
-                        r+=centerIntensity+trebleImpact*0.3; g+=centerIntensity+trebleImpact*0.3; b+=centerIntensity+trebleImpact*0.3;
-                        colorsArray[idx]=r*fade; colorsArray[idx+1]=g*fade; colorsArray[idx+2]=b*fade;
-                    }
+                const maxDist=80; const speedBase=0.1*config.flowSpeed; for(let i=0; i<config.particleCount; i++) { const idx=i*3; let typeSpeed=1.0; if(types[i]===0)typeSpeed=1.5; else if(types[i]===2)typeSpeed=0.7; let currentDist=lifeData[i]; currentDist+=speedBase*typeSpeed*(1+bassImpact*0.5); if(currentDist>maxDist)currentDist=Math.random()*5; lifeData[i]=currentDist; const nx=initialPositions[idx]; const ny=initialPositions[idx+1]; const nz=initialPositions[idx+2]; const ripple=Math.sin(currentDist*0.2-time*2.0)*(bassImpact*2.0); const finalDist=currentDist+ripple; positionsArray[idx]=nx*finalDist; positionsArray[idx+1]=ny*finalDist; positionsArray[idx+2]=nz*finalDist;
+                    // Fade out at edge
+                    const fade = 1.0 - Math.pow(currentDist / maxDist, 2);
+                    colorsArray[idx] *= fade; colorsArray[idx+1] *= fade; colorsArray[idx+2] *= fade;
                 }
                 particles.rotation.y=time*0.05*config.rotationSpeed;
-            } else {
-                const moveSpeed = 0.05;
-                for (let i = 0; i < config.particleCount; i++) {
-                    const idx = i * 3;
-                    colorsArray[idx] = colorAttributes[idx]; colorsArray[idx+1] = colorAttributes[idx+1]; colorsArray[idx+2] = colorAttributes[idx+2];
-                    positionsArray[idx] += (targets[idx] - positionsArray[idx]) * moveSpeed;
-                    positionsArray[idx+1] += (targets[idx+1] - positionsArray[idx+1]) * moveSpeed;
-                    positionsArray[idx+2] += (targets[idx+2] - positionsArray[idx+2]) * moveSpeed;
-                }
-                particles.rotation.y += config.rotationSpeed;
+            } else if (config.shape === 'origin') {
+                for (let i = 0; i < config.particleCount; i++) { const idx = i * 3; if (types[i] === 0) { const nx = initialPositions[idx], ny = initialPositions[idx+1], nz = initialPositions[idx+2]; const tx = targets[idx], ty = targets[idx+1], tz = targets[idx+2]; const noiseFreq = 4.0; const liquidTime = time * config.flowSpeed * config.flowDirection; const displacement = (Math.sin(nx * noiseFreq + liquidTime) * Math.cos(ny * noiseFreq + liquidTime) + Math.sin(ny * 3 - liquidTime) * 0.5) * 3.0; const finalDisp = displacement + (bassImpact * 2.0); positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], tx + nx * finalDisp, 0.1); positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], ty + ny * finalDisp, 0.1); positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], tz + nz * finalDisp, 0.1); } else { const tx = targets[idx], ty = targets[idx+1], tz = targets[idx+2]; const u = uvData[i*2], v = uvData[i*2+1]; const twist = Math.sin(time * 0.2) * 5.0 + 5.0; const wave = Math.sin(u * 5 + time * 0.2 * config.flowDirection) * Math.cos(v * 5) * twist; positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], tx + wave, 0.05); positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], ty + Math.sin(u*3)*twist*0.5, 0.05); positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], tz + Math.cos(u*5)*twist, 0.05); } } particles.rotation.y += config.rotationSpeed * config.flowDirection;
+            } else if (config.shape === 'zen') {
+                const rippleSpeed = time * 0.8 * config.flowSpeed * config.flowDirection; for (let i = 0; i < config.particleCount; i++) { const idx = i * 3; if (types[i] === 0) { const tx = targets[idx], ty = targets[idx+1], tz = targets[idx+2]; const noise = Math.sin(tx * 0.1 + time) * Math.cos(ty * 0.1 + time) * 0.5; positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], tx * breath + tx * bassImpact * 0.2 + noise, 0.05); positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], ty * breath + ty * bassImpact * 0.2 + noise, 0.05); positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], tz * breath + tz * bassImpact * 0.2 + noise, 0.05); } else { const ox = initialPositions[idx], oz = initialPositions[idx+2]; const dist = Math.sqrt(ox*ox + oz*oz); const angle = Math.atan2(oz, ox); const wave = Math.sin(angle * 4 + dist * 0.2 - rippleSpeed) * Math.cos(dist * 0.1); const amplitude = 2.0 * (1 + bassImpact * 2); positionsArray[idx] = THREE.MathUtils.lerp(positionsArray[idx], ox, 0.05); positionsArray[idx+1] = THREE.MathUtils.lerp(positionsArray[idx+1], wave * amplitude, 0.1); positionsArray[idx+2] = THREE.MathUtils.lerp(positionsArray[idx+2], oz, 0.05); } } particles.rotation.y += config.rotationSpeed * config.flowDirection;
             }
 
             particleGeo.attributes.position.needsUpdate = true;
@@ -615,123 +597,5 @@
             composer.render();
         }
 
-        function generateSongHash(str) {
-            let hash = 0;
-            for (let i = 0; i < str.length; i++) {
-                const char = str.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash |= 0; 
-            }
-            songHash = hash;
-        }
-
-        uploadBtn.addEventListener('click', () => fileInput.click());
-        
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if(!file) return;
-            generateSongHash(file.name + file.size);
-            
-            // Generate 3 unique colors from the hash
-            const rng = new SeededRandom(songHash);
-            const hue = Math.floor(rng.next() * 360);
-            const c1 = new THREE.Color(`hsl(${hue}, 80%, 70%)`);
-            const c2 = new THREE.Color(`hsl(${(hue+40)%360}, 80%, 60%)`);
-            const c3 = new THREE.Color(`hsl(${(hue+180)%360}, 80%, 50%)`);
-            
-            config.color1 = '#' + c1.getHexString();
-            config.color2 = '#' + c2.getHexString();
-            config.color3 = '#' + c3.getHexString();
-            
-            // Switch to unique and update visual
-            config.shape = 'unique';
-            updateGUIColor(); // Update GUI Pickers
-            
-            if(gui) { gui.controllersRecursive().forEach(c => { if(c.property === 'shape') c.setValue('unique'); }); }
-            
-            songTitleEl.innerText = file.name.replace(/\.[^/.]+$/, "");
-            document.querySelector('.artist-name').innerText = "ID: " + Math.abs(songHash).toString(16).toUpperCase();
-            
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                if(audioContext) audioContext.close();
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                audioContext.decodeAudioData(ev.target.result, buffer => {
-                    audioBuffer = buffer; audioDuration = buffer.duration; playAudio(0);
-                });
-                audioAnalyser = audioContext.createAnalyser(); audioAnalyser.fftSize = 512;
-                dataArray = new Uint8Array(audioAnalyser.frequencyBinCount);
-            };
-            reader.readAsArrayBuffer(file);
-        });
-
-        function initGUI(bloomPass) {
-            gui = new GUI({ title: 'VISUALIZER PANEL' });
-            const folderScene = gui.addFolder('Theme & Form');
-            folderScene.add(config, 'shape', ['unique', 'cumulus', 'nebula', 'origin', 'zen']).name('Mode').onChange(val => calculateShape(val));
-            folderScene.add(config, 'useDynamicColor').name('Auto Color');
-            
-            // COLOR MIXING GUI
-            const folderColor = gui.addFolder('Tri-Color Mixing');
-            folderColor.addColor(config, 'color1').name('Color 1 (Top)').onChange(() => calculateShape(config.shape));
-            folderColor.addColor(config, 'color2').name('Color 2 (Mid)').onChange(() => calculateShape(config.shape));
-            folderColor.addColor(config, 'color3').name('Color 3 (Bot)').onChange(() => calculateShape(config.shape));
-
-            const folderParticles = gui.addFolder('Particle Optics');
-            folderParticles.add(config, 'particleSize', 0.01, 1.0).name('Size / Density');
-            folderParticles.add(config, 'particleOpacity', 0.1, 1.0).name('Opacity');
-            const folderMotion = gui.addFolder('Motion Dynamics');
-            folderMotion.add(config, 'flowSpeed', 0, 1.0).name('Time Scale');
-            folderMotion.add(config, 'rotationSpeed', 0, 0.02).name('Spin');
-            const folderAudio = gui.addFolder('Audio Response');
-            folderAudio.add(config, 'bassSensitivity', 0, 3.0).name('Bass Impact');
-            folderAudio.add(config, 'trebleSensitivity', 0, 3.0).name('Treble Flash');
-            const folderFX = gui.addFolder('Post-Processing');
-            folderFX.add(config, 'bloomStrength', 0, 3.0).name('Glow Intensity').onChange(v => bloomPass.strength = v);
-            if(window.innerWidth > 600) { folderScene.open(); folderColor.open(); }
-        }
-
-        function updateGUIColor() {
-            if(gui) gui.controllersRecursive().forEach(c => { 
-                if(c.property === 'color1' || c.property === 'color2' || c.property === 'color3') c.updateDisplay(); 
-            });
-        }
-        function onMouseMove(e) {
-            const x = e.clientX / window.innerWidth;
-            if(config.shape !== 'nebula' && config.shape !== 'cumulus' && config.shape !== 'unique') {
-                 titleEl.style.backgroundImage = `linear-gradient(${45 + x*40}deg, #fff, #a1c4fd)`;
-            }
-        }
-        function playAudio(offset) {
-            if (audioSource) audioSource.stop();
-            audioSource = audioContext.createBufferSource(); audioSource.buffer = audioBuffer;
-            audioSource.connect(audioAnalyser); audioAnalyser.connect(audioContext.destination);
-            audioSource.start(0, offset); isPlaying = true; playBtn.innerText = "Pause";
-            if(window.pTimer) clearInterval(window.pTimer);
-            const startT = audioContext.currentTime - offset;
-            window.pTimer = setInterval(() => {
-                if(!isPlaying) return;
-                const curr = audioContext.currentTime - startT; const pct = (curr / audioDuration) * 100;
-                progressBar.value = pct; const m = Math.floor(curr/60); const s = Math.floor(curr%60).toString().padStart(2,'0');
-                timeDisplay.innerText = `${m}:${s}`;
-                if(pct>=100) { isPlaying=false; playBtn.innerText="Replay"; clearInterval(window.pTimer); }
-            }, 200);
-        }
-        playBtn.addEventListener('click', () => {
-            if(!audioContext) return;
-            if(isPlaying) { audioContext.suspend(); isPlaying=false; playBtn.innerText="Resume"; }
-            else { audioContext.resume(); isPlaying=true; playBtn.innerText="Pause"; }
-        });
-        progressBar.addEventListener('input', (e) => { if(audioBuffer) playAudio((e.target.value/100)*audioDuration); });
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight); composer.setSize(window.innerWidth, window.innerHeight);
-        }
-        function updateClock() { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }
-        document.getElementById('fullscreen-btn').addEventListener('click', () => {
-            if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen();
-        });
-        init();
-    </script>
-</body>
-</html>
+        // --- File Upload & Hashing ---
+        function generateSo
